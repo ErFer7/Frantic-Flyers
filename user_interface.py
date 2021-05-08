@@ -3,3 +3,9 @@
 '''
 Módulo para o sistema de interfaces.
 '''
+
+class UserInterfaceManager():
+
+    '''
+    Gerencia as interfaces
+    '''
