@@ -4,7 +4,7 @@
 Jogo para a conclusão da disciplina de programação orientada a objetos II.
 
 Autores: Arthur Medeiros Machado e Eric Fernandes Evaristo.
-Projeto: Corredores Estreitos 5: A vendeta do projeto final.
+Projeto: Frantic Flyers.
 '''
 
-VERSION = "v0.1"
+VERSION = "v0.2"
