@@ -7,17 +7,52 @@ Módulo para o sistema de interfaces.
 import os
 
 from enum import Enum
-from math import ceil
 
 import pygame
 
-import graphics
+import graphics # Usar from
+from states import InterfaceState, InterfaceEvent
 
 class UserInterfaceManager():
 
     '''
     Gerencia as interfaces
     '''
+
+    state: InterfaceState
+    button_event: InterfaceEvent
+    main_menu: None
+
+    def __init__(self, screen_size, version):
+
+        self.state = InterfaceState.MAIN_MENU
+        self.button_event = None
+        self.main_menu = MainMenu(screen_size, version, (20, 20, 20))
+
+    def update_interface(self, state, events, mouse_position):
+        '''
+        Atualiza os eventos e gráficos da interface
+        '''
+
+        # Atualiza os eventos
+        for event in events:
+
+            self.button_event = None
+
+            if self.state == InterfaceState.MAIN_MENU:
+
+                self.button_event = self.main_menu.check_buttons(event, mouse_position)
+
+        # Gráficos
+
+        # Define o estado
+
+    def get_state(self):
+        '''
+        Retorna o estado
+        '''
+
+        return self.state
 
 class Alignment(Enum):
 
@@ -35,20 +70,22 @@ class UserInterface():
     Define a base de uma tela
     '''
 
-    position: list  # Posição
-    screen_size: list  # Tamanho da tela
+    position: tuple  # Posição
+    screen_size: tuple  # Tamanho da tela
     texts: list  # textos
-    buttons: dict  # Botões
+    buttons: list  # Botões
     surface: pygame.Surface  # Superfície
+    background_color: pygame.color.Color
     selection_sound: pygame.mixer.Sound  # Som de seleção
 
-    def __init__(self, position, size, screen_size):
+    def __init__(self, position, size, screen_size, background_color):
 
-        self.position = position[:]
-        self.screen_size = screen_size[:]
+        self.position = position
+        self.screen_size = screen_size
         self.texts = []
-        self.buttons = {}
+        self.buttons = []
         self.surface = pygame.Surface(size)
+        self.background_color = pygame.color.Color(background_color)
         self.selection_sound = pygame.mixer.Sound(os.path.join("Audio", "Selection.wav"))
 
     def update(self, display):
@@ -56,39 +93,42 @@ class UserInterface():
         Atualiza e renderiza a interface
         '''
 
-        self.surface.fill((20, 20, 20))
+        self.surface.fill(self.background_color)
 
-        for key in self.buttons:
+        for button in self.buttons:
 
-            self.buttons[key].sprites.draw(self.surface)
+            button.render(self.surface)
 
         for text in self.texts:
 
-            self.surface.blit(text.text, text.position)
+            self.surface.blit(text.get_render(), text.get_position())
 
         display.blit(self.surface, self.position)
 
-        pygame.display.update()
-
-    def check_buttons(self, click_position):
+    def check_buttons(self, event, mouse_position):
         '''
         Checa qual botão está sendo pressionado
         '''
 
-        for key in self.buttons:
+        event = None
 
-            if self.buttons[key].is_clicked(click_position):
+        for button in self.buttons:
 
-                return key
+            if button.is_pressed(event, mouse_position):
+
+                event = button.get_event()
+                break
+
+        return event
 
     def delete(self):
         '''
         Libera os sprites dos botões
         '''
 
-        for button in self.buttons:
+        for key in self.buttons:
 
-            self.buttons[button].delete()
+            self.buttons[key].delete()
 
 class Button():
 
@@ -96,20 +136,24 @@ class Button():
     Define um botão
     '''
 
-    position: list  # Posição
-    size: list  # Tamanho
+    position: tuple  # Posição
+    size: tuple  # Tamanho
+    event: InterfaceEvent
+    key: None
     sprites: pygame.sprite.RenderPlain()  # Sprites
 
-    def __init__(self, alignment, position, size, screen_size):
+    def __init__(self, alignment, position, size, event, key, screen_size):
 
-        self.position = [0, 0]
-        self.size = size[:]
+        self.position = None
+        self.size = size
+        self.event = event
+        self.key = key
         self.sprites = pygame.sprite.RenderPlain()
 
         # Calcula a posiçõa com base no alinhamento
         if alignment == Alignment.TOP_LEFT:
 
-            self.position = position[:]
+            self.position = position
         elif alignment == Alignment.TOP_RIGHT:
 
             self.position = (screen_size[0] - position[0], position[1])
@@ -123,20 +167,46 @@ class Button():
                                                   (size[0] - 20, size[1] - 20),
                                                   (20, 20, 20)))
 
-    def is_clicked(self, click_position):
+    def is_pressed(self, event, mouse_position):
         '''
         Checa se o botão foi clicado
         '''
 
-        if click_position[0] >= self.position[0]                         \
-                and click_position[0] <= self.position[0] + self.size[0] \
-                and click_position[1] >= self.position[1]                \
-                and click_position[1] <= self.position[1] + self.size[1]:
+        is_clicked = False
+        key_is_pressed = False
+
+        if event is not None:
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+
+                is_clicked = mouse_position[0] >= self.position[0] and               \
+                            mouse_position[0] <= self.position[0] + self.size[0] and \
+                            mouse_position[1] >= self.position[1] and                \
+                            mouse_position[1] <= self.position[1] + self.size[1]
+            elif event.type == pygame.KEYDOWN:
+
+                key_is_pressed = self.key == event.key
+
+        if is_clicked or key_is_pressed:
 
             return True
         else:
 
             return False
+
+    def get_event(self):
+        '''
+        Retorna o evento causado pelo botão
+        '''
+
+        return self.event
+
+    def render(self, surface):
+        '''
+        Renderiza o botão
+        '''
+
+        self.sprites.draw(surface)
 
     def delete(self):
         '''
@@ -152,15 +222,22 @@ class Text():
     '''
 
     size: int  # Tamanho
-    position: list  # Posição
+    position: tuple  # Posição
     font: pygame.font.Font  # Fonte
     text: pygame.font.Font.render  # Superfície renderizada
     color: pygame.color.Color  # Cor
 
-    def __init__(self, text, alignment, position, size, color, screen_size, font="joystix monospace.ttf"):
+    def __init__(self,
+                 text,
+                 alignment,
+                 position,
+                 size,
+                 color,
+                 screen_size,
+                 font="joystix monospace.ttf"):
 
         self.size = size
-        self.position = [0, 0]
+        self.position = None
         self.color = pygame.color.Color(color)
         self.font = pygame.font.Font(os.path.join("Fonts", font), self.size)
         self.text = self.font.render(text, False, self.color)
@@ -168,7 +245,7 @@ class Text():
         # Calcula a posição com base no alinhamento
         if alignment == Alignment.TOP_LEFT:
 
-            self.position = position[:]
+            self.position = position
         elif alignment == Alignment.TOP_RIGHT:
 
             self.position = (screen_size[0] - position[0], position[1])
@@ -184,31 +261,40 @@ class Text():
 
         self.text = self.font.render(text, False, self.color)
 
-# class Background():
+    def get_render(self):
+        '''
+        Retorna a superfície do texto
+        '''
 
-#     '''
-#     Define o plano de fundo com sprites
-#     '''
+        return self.text
 
-#     sprites: pygame.sprite.RenderPlain  # Sprites
+    def get_position(self):
+        '''
+        Retorna a posição
+        '''
 
-#     def __init__(self, size):
+        return self.position
 
-#         self.sprites = pygame.sprite.RenderPlain()
+class Background():
 
-#         # Preenche o tamanho especificado com sprites
-#         for i in range(ceil(size[1] / 256.0)):
+    '''
+    Define o plano de fundo com sprites
+    '''
 
-#             for j in range(ceil(size[0] / 256.0)):
+    sprites: pygame.sprite.RenderPlain  # Sprites
 
-#                 self.sprites.add(graphics.BackgroundSprite((j * 256.0, i * 256.0)))
+    def __init__(self, size):
 
-#     def delete(self):
-#         '''
-#         Libera os sprites
-#         '''
+        self.sprites = pygame.sprite.RenderPlain()
+        self.sprites.add(graphics.RectangleSprite([0, 0], size, (255, 223, 0)))
+        self.sprites.add(graphics.BackgroundSprite([size[0] / 2, size[1] / 2], size))
 
-#         self.sprites.empty()
+    def delete(self):
+        '''
+        Libera os sprites
+        '''
+
+        self.sprites.empty()
 
 class Bar():
 
@@ -216,19 +302,19 @@ class Bar():
     Define uma barra
     '''
 
-    position: list  # Posição
+    position: tuple  # Posição
     sprites: pygame.sprite.RenderPlain  # Sprites
 
     def __init__(self, alignment, position, size, border_color, color, screen_size):
 
-        self.position = [0, 0]
+        self.position = None
         self.size = size
         self.sprites = pygame.sprite.RenderPlain()
 
         # Define a posição com base no alinhamento
         if alignment == Alignment.TOP_LEFT:
 
-            self.position = position[:]
+            self.position = position
         elif alignment == Alignment.TOP_RIGHT:
 
             self.position = (screen_size[0] - position[0], position[1])
@@ -255,3 +341,94 @@ class Bar():
         '''
 
         self.sprites.empty()
+
+class MainMenu(UserInterface):
+
+    '''
+    Define o menu
+    '''
+
+    background: Background  # Plano de fundo
+
+    def __init__(self, screen_size, version, background_color):
+
+        super().__init__((0, 0), screen_size, screen_size, background_color)
+
+        # Inicializa o plano de fundo, botões e textos
+
+        self.background = Background(screen_size)
+
+        self.buttons.append(Button(Alignment.CENTER,
+                                   (0, 0),
+                                   (400, 100),
+                                   InterfaceEvent.MODIFY,
+                                   pygame.K_RETURN,
+                                   screen_size))
+
+        self.buttons.append(Button(Alignment.CENTER,
+                                   (0, -200),
+                                   (400, 100),
+                                   InterfaceEvent.EXIT,
+                                   pygame.K_ESCAPE,
+                                   screen_size))
+
+        self.texts.append(Text(f"v{version}",
+                               Alignment.TOP_LEFT,
+                               [0, 0],
+                               15,
+                               (255, 255, 255),
+                               screen_size))
+        self.texts.append(Text("FRANTIC FLYERS",
+                               Alignment.CENTER,
+                               (0, 200),
+                               80,
+                               self.background_color,
+                               screen_size))
+
+        self.texts.append(Text("FRANTIC FLYERS",
+                               Alignment.CENTER,
+                               (-10, 200),
+                               80,
+                               (255, 223, 0),
+                               screen_size))
+        self.texts.append(Text("JOGAR",
+                               Alignment.CENTER,
+                               (0, 0),
+                               40,
+                               (255, 223, 0),
+                               screen_size))
+        self.texts.append(Text("SAIR",
+                                Alignment.CENTER,
+                                (0, -200),
+                                40,
+                                (255, 223, 0),
+                                screen_size))
+
+    def update(self, display):
+        '''
+        Renderiza o menu
+        '''
+
+        self.surface.fill(self.background_color)
+        self.background.sprites.draw(self.surface)
+
+        for key in self.buttons:
+
+            self.buttons[key].render(self.surface)
+
+        for text in self.texts:
+
+            self.surface.blit(text.get_render(), text.get_position())
+
+        display.blit(self.surface, self.position)
+
+    def delete(self):
+        '''
+        Libera os sprites dos botões e do plano de fundo
+        '''
+
+        for key in self.buttons:
+
+            self.buttons[key].delete()
+
+        self.background.delete()

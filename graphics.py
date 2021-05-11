@@ -4,6 +4,8 @@
 Módulo para o sistema gráfico.
 '''
 
+import os
+
 import pygame
 
 class RectangleSprite(pygame.sprite.Sprite):
@@ -37,5 +39,23 @@ class RectangleSprite(pygame.sprite.Sprite):
             size[1] = 1
 
         self.image = pygame.transform.scale(self.image, size)
+        self.rect.x = position[0]
+        self.rect.y = position[1]
+
+class BackgroundSprite(pygame.sprite.Sprite):
+
+    '''
+    Sprite de plano de fundo do menu
+    '''
+
+    def __init__(self, position, size):
+
+        super().__init__()
+
+        self.image = pygame.transform.scale(pygame.image.load(os.path.join("Sprites",
+                                                                           "Background",
+                                                                           "UI_Background.png")),
+                                                                           size)
+        self.rect = self.image.get_rect()
         self.rect.x = position[0]
         self.rect.y = position[1]
