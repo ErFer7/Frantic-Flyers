@@ -49,16 +49,23 @@ class GameManager():
         pygame.mixer.init()
 
         self.clock = pygame.time.Clock()
-        self.display = pygame.display.set_mode(flags=pygame.FULLSCREEN)
+        #self.display = pygame.display.set_mode(flags=pygame.FULLSCREEN)
+        self.display = pygame.display.set_mode(flags=pygame.RESIZABLE)
         self.music_channel = pygame.mixer.Channel(0)
         self.sound_effects_channel = pygame.mixer.Channel(1)
 
         self.state = State.MAIN_MENU
         self.events = []
 
-        # Inicializa com os dados padrão
         self.file_system = FileSystem(os.path.join("Data", "Player Data.json"))
-        self.data = {"Modification Points": 0}
+
+        # Inicializa o jogo com os dados padrões e depois verifica se é necessário
+        # Carregar os dados da memória permanente.
+        self.data = {"Modification Points": 0,
+                     "Agility": 0,
+                     "Damage": 0,
+                     "Fire Rate": 0,
+                     "Armor": 0}
 
         if len(self.file_system.get_data()) > 0:
 

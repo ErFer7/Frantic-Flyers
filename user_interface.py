@@ -81,7 +81,6 @@ class UserInterface():
     surface: pygame.Surface  # Superfície
     background: None
     background_color: pygame.color.Color
-    selection_sound: pygame.mixer.Sound  # Som de seleção
 
     def __init__(self, position, size, screen_size, background_color):
 
@@ -92,7 +91,6 @@ class UserInterface():
         self.surface = pygame.Surface(size)
         self.background = None
         self.background_color = pygame.color.Color(background_color)
-        self.selection_sound = pygame.mixer.Sound(os.path.join("Audio", "Selection.wav"))
 
     def update(self, display):
         '''
