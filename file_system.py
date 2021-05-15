@@ -17,7 +17,7 @@ class FileSystem():
     path: str  # Local do arquivo de dados
     data: dict  # Dicionário para armazenar dados
 
-    def __init__(self, path, init_data = None):
+    def __init__(self, path):
 
         self.path = path
         self.data = {}
@@ -30,14 +30,6 @@ class FileSystem():
                 data_json = file.read()
 
             self.data = json.loads(data_json)
-
-        if init_data is not None:
-
-            for key in init_data:
-
-                self.set_element(key, init_data[key])
-
-            self.write_file()
 
     def write_file(self):
         '''
@@ -66,7 +58,7 @@ class FileSystem():
         del self.data[element_id]
         self.write_file()
 
-    def get_data(self):
+    def get_matrix_data(self):
         '''
         Retorna uma matriz de dados.
         '''
@@ -79,3 +71,10 @@ class FileSystem():
             matrix.append(element)
 
         return matrix
+
+    def get_data(self):
+        '''
+        Retorna os dados
+        '''
+
+        return self.data

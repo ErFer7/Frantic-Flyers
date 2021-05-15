@@ -20,3 +20,7 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 * Mais desenvolvimento do menu principal e menu de modificação.
 * Sistema de arquivos adicionado.
 * Simplificação do sistema de UI.
+
+## 0.3.2 - 15/05/2021
+
+* Correção de um erro no sistema de arquivo e dados.

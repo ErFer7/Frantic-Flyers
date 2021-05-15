@@ -32,8 +32,8 @@ class GameManager():
     sound_effects_channel: pygame.mixer.Channel
     state: State
     events: list
-    data: dict
     file_system: FileSystem
+    data: dict
     gameplay: None
     entities: EntityManager
     physics: PhysicsManager
@@ -56,8 +56,13 @@ class GameManager():
         self.state = State.MAIN_MENU
         self.events = []
 
+        # Inicializa com os dados padrão
+        self.file_system = FileSystem(os.path.join("Data", "Player Data.json"))
         self.data = {"Modification Points": 0}
-        self.file_system = FileSystem(os.path.join("Data", "Player Data.json"), self.data)
+
+        if len(self.file_system.get_data()) > 0:
+
+            self.data = self.file_system.get_data()
 
         self.gameplay = GameplayManager()
         self.entities = EntityManager()
