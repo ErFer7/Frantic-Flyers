@@ -11,7 +11,10 @@ from time import time_ns
 
 import pygame
 
-from states import GameState
+from states import Event, State
+from entities import EntityManager
+from physics import PhysicsManager
+from graphics import GraphicsManager
 from user_interface import UserInterfaceManager
 
 class GameManager():
@@ -24,7 +27,12 @@ class GameManager():
     display: pygame.display.set_mode
     music_channel: pygame.mixer.Channel
     sound_effects_channel: pygame.mixer.Channel
-    state: GameState
+    state: State
+    events: list
+    gameplay: None
+    entities: EntityManager
+    physics: PhysicsManager
+    graphics: GraphicsManager
     user_interface: UserInterfaceManager
 
     def __init__(self, version):
@@ -40,8 +48,13 @@ class GameManager():
         self.music_channel = pygame.mixer.Channel(0)
         self.sound_effects_channel = pygame.mixer.Channel(1)
 
-        self.state = GameState.MENU
+        self.state = State.MAIN_MENU
+        self.events = []
 
+        self.gameplay = GameplayManager()
+        self.entities = EntityManager()
+        self.physics = PhysicsManager()
+        self.graphics = GraphicsManager()
         self.user_interface = UserInterfaceManager((self.display.get_width(),
                                                     self.display.get_height()),
                                                     version)
@@ -52,22 +65,53 @@ class GameManager():
         Roda o jogo
         '''
 
-        while self.state != GameState.EXIT:
+        while self.state != State.EXIT:
 
-            # Atualizar o gameplay
-
-            # Atualizar os gráficos
-
+            # Atualiza cada sistema
+            self.gameplay.update_gameplay()
+            self.entities.update_entities()
+            self.physics.update_physics()
+            self.graphics.update_graphics()
             self.user_interface.update_interface(self.state,
+                                                 self.display,
                                                  pygame.event.get(),
                                                  pygame.mouse.get_pos())
 
-            interface_state = self.user_interface.get_state()
-            # Obter estado de gameplay
+            # Obtém os eventos do jogo
+            self.events.append(self.user_interface.get_event())
 
-            # Calcular qual será o próximo estado do jogo e fazer as operações
+            for event in self.events:
 
-            self.display.update()
+                if event is not None:
+
+                    if event == Event.UI_MODIFY:
+
+                        self.state = State.MODIFICATION_MENU
+                    elif event == Event.UI_RETURN_TO_MENU:
+
+                        self.state = State.MAIN_MENU
+                    elif event == Event.UI_PLAY:
+
+                        self.state = State.GAMEPLAY
+                    elif event == Event.UI_EXIT:
+
+                        self.state = State.EXIT
+                    elif event == Event.UI_PAUSE:
+
+                        self.state = State.PAUSE
+                    elif event == Event.UI_RESUME:
+
+                        self.state = State.GAMEOVER
+                    elif event == Event.UI_RESTART:
+
+                        self.state = State.RESTART
+                    elif event == Event.GP_LOST:
+
+                        self.state = State.GAMEOVER
+
+            self.events.clear()
+
+            pygame.display.update()
             self.clock.tick(fps)
 
         pygame.quit()
@@ -78,3 +122,8 @@ class GameplayManager():
     '''
     Classe que gerencia o gameplay
     '''
+
+    def update_gameplay(self):
+        '''
+        Atualiza o gameplay
+        '''

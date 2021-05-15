@@ -8,3 +8,8 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 ## 0.2 - 11/05/2021
 
 * Definições inicias da interface criadas.
+
+## 0.3 - 15/05/2021
+
+* Interface mais desenvolvida
+* Sistema central do jogo modelado.

@@ -8,6 +8,17 @@ import os
 
 import pygame
 
+class GraphicsManager():
+
+    '''
+    Gerencia os graficos
+    '''
+
+    def update_graphics(self):
+        '''
+        Atualiza os gráficos.
+        '''
+
 class RectangleSprite(pygame.sprite.Sprite):
 
     '''

@@ -6,40 +6,31 @@ Módulo para os estados.
 
 from enum import Enum
 
-class InterfaceState(Enum):
+class Event(Enum):
 
     '''
-    Estados das interfaces
+    Eventos do jogo
     '''
 
-    MAIN_MENU = 1
-    MODIFICATION = 2
-    GAMEPLAY = 3
-    PAUSE = 4
-    GAMEOVER = 5
+    UI_MODIFY = 1
+    UI_RETURN_TO_MENU = 2
+    UI_PLAY = 3
+    UI_EXIT = 4
+    UI_PAUSE = 5
+    UI_RESUME = 6
+    UI_RESTART = 7
+    GP_LOST = 8
 
-class InterfaceEvent(Enum):
-
-    '''
-    Eventos da interface
-    '''
-
-    MODIFY = 1
-    PLAY = 2
-    EXIT = 3
-    PAUSE = 4
-    RESUME = 5
-    RESTART = 6
-    RETURN_TO_MENU = 7
-
-class GameState(Enum):
+class State(Enum):
 
     '''
     Estados do jogo
     '''
 
-    MENU = 1
-    GAMEPLAY = 2
-    PAUSE = 3
-    GAMEOVER = 4
-    EXIT = 5
+    MAIN_MENU = 1
+    MODIFICATION_MENU = 2
+    GAMEPLAY = 3
+    PAUSE = 4
+    GAMEOVER = 5
+    RESTART = 6
+    EXIT = 7
