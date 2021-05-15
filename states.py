@@ -6,6 +6,7 @@ Módulo para os estados.
 
 from enum import Enum
 
+
 class Event(Enum):
 
     '''
@@ -20,6 +21,7 @@ class Event(Enum):
     UI_RESUME = 6
     UI_RESTART = 7
     GP_LOST = 8
+
 
 class State(Enum):
 

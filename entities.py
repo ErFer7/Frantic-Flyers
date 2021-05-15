@@ -4,6 +4,7 @@
 Módulo para as entidades.
 '''
 
+
 class EntityManager():
 
     '''

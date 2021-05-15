@@ -8,6 +8,7 @@ import os
 
 import pygame
 
+
 class GraphicsManager():
 
     '''
@@ -18,6 +19,7 @@ class GraphicsManager():
         '''
         Atualiza os gráficos.
         '''
+
 
 class RectangleSprite(pygame.sprite.Sprite):
 
@@ -53,6 +55,7 @@ class RectangleSprite(pygame.sprite.Sprite):
         self.rect.x = position[0]
         self.rect.y = position[1]
 
+
 class BackgroundSprite(pygame.sprite.Sprite):
 
     '''
@@ -66,7 +69,7 @@ class BackgroundSprite(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(pygame.image.load(os.path.join("Sprites",
                                                                            "Background",
                                                                            "UI_Background.png")),
-                                                                           size)
+                                            size)
         self.rect = self.image.get_rect()
         self.rect.x = position[0]
         self.rect.y = position[1]

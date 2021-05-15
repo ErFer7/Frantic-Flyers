@@ -10,8 +10,9 @@ from enum import Enum
 
 import pygame
 
-import graphics # Usar from
+import graphics  # Usar from
 from states import Event, State
+
 
 class UserInterfaceManager():
 
@@ -21,13 +22,15 @@ class UserInterfaceManager():
 
     user_interface_event: Event
     main_menu: None
+    modification_menu: None
 
     def __init__(self, screen_size, version):
 
         self.user_interface_event = None
         self.main_menu = MainMenu(screen_size, version, (92, 184, 230))
+        self.modification_menu = ModificationMenu(screen_size, (92, 184, 230))
 
-    def update_interface(self, state, display, events, mouse_position):
+    def update_interface(self, state, display, events):
         '''
         Atualiza os eventos e gráficos da interface
         '''
@@ -39,8 +42,12 @@ class UserInterfaceManager():
 
             if state == State.MAIN_MENU:
 
-                self.user_interface_event = self.main_menu.check_buttons(event, mouse_position)
+                self.user_interface_event = self.main_menu.check_buttons(event)
                 self.main_menu.update(display)
+            elif state == State.MODIFICATION_MENU:
+
+                self.user_interface_event = self.modification_menu.check_buttons(event)
+                self.modification_menu.update(display)
 
     def get_event(self):
         '''
@@ -48,6 +55,7 @@ class UserInterfaceManager():
         '''
 
         return self.user_interface_event
+
 
 class Alignment(Enum):
 
@@ -58,6 +66,7 @@ class Alignment(Enum):
     CENTER = 1
     TOP_LEFT = 2
     TOP_RIGHT = 3
+
 
 class UserInterface():
 
@@ -70,6 +79,7 @@ class UserInterface():
     texts: list  # textos
     buttons: list  # Botões
     surface: pygame.Surface  # Superfície
+    background: None
     background_color: pygame.color.Color
     selection_sound: pygame.mixer.Sound  # Som de seleção
 
@@ -80,6 +90,7 @@ class UserInterface():
         self.texts = []
         self.buttons = []
         self.surface = pygame.Surface(size)
+        self.background = None
         self.background_color = pygame.color.Color(background_color)
         self.selection_sound = pygame.mixer.Sound(os.path.join("Audio", "Selection.wav"))
 
@@ -89,6 +100,10 @@ class UserInterface():
         '''
 
         self.surface.fill(self.background_color)
+
+        if self.background is not None:
+
+            self.background.sprites.draw(self.surface)
 
         for button in self.buttons:
 
@@ -100,7 +115,7 @@ class UserInterface():
 
         display.blit(self.surface, self.position)
 
-    def check_buttons(self, event, mouse_position):
+    def check_buttons(self, event):
         '''
         Checa qual botão está sendo pressionado
         '''
@@ -109,21 +124,13 @@ class UserInterface():
 
         for button in self.buttons:
 
-            if button.is_pressed(event, mouse_position):
+            if button.is_pressed(event):
 
                 user_interface_event = button.get_event()
                 break
 
         return user_interface_event
 
-    def delete(self):
-        '''
-        Libera os sprites dos botões
-        '''
-
-        for key in self.buttons:
-
-            self.buttons[key].delete()
 
 class Button():
 
@@ -170,7 +177,7 @@ class Button():
                                                   (size[0] - 20, size[1] - 20),
                                                   background))
 
-    def is_pressed(self, event, mouse_position):
+    def is_pressed(self, event):
         '''
         Checa se o botão foi clicado
         '''
@@ -182,10 +189,10 @@ class Button():
 
             if event.type == pygame.MOUSEBUTTONDOWN:
 
-                is_clicked = mouse_position[0] >= self.position[0] and               \
-                            mouse_position[0] <= self.position[0] + self.size[0] and \
-                            mouse_position[1] >= self.position[1] and                \
-                            mouse_position[1] <= self.position[1] + self.size[1]
+                is_clicked = event.pos[0] >= self.position[0] and       \
+                    event.pos[0] <= self.position[0] + self.size[0] and \
+                    event.pos[1] >= self.position[1] and                \
+                    event.pos[1] <= self.position[1] + self.size[1]
             elif event.type == pygame.KEYDOWN:
 
                 key_is_pressed = self.key == event.key
@@ -211,12 +218,6 @@ class Button():
 
         self.sprites.draw(surface)
 
-    def delete(self):
-        '''
-        Libera os sprites
-        '''
-
-        self.sprites.empty()
 
 class Text():
 
@@ -229,6 +230,10 @@ class Text():
     font: pygame.font.Font  # Fonte
     text: pygame.font.Font.render  # Superfície renderizada
     color: pygame.color.Color  # Cor
+    has_shadow: bool
+    shadow_color: pygame.color.Color
+    shadow_text: pygame.font.Font.render
+    merged_surface: pygame.Surface
 
     def __init__(self,
                  text,
@@ -236,13 +241,29 @@ class Text():
                  position,
                  size,
                  color,
-                 screen_size):
+                 screen_size,
+                 shadow,
+                 shadow_color = None):
 
         self.size = size
         self.position = None
         self.color = pygame.color.Color(color)
         self.font = pygame.font.Font(os.path.join("Fonts", "joystix monospace.ttf"), self.size)
         self.text = self.font.render(text, False, self.color)
+        self.has_shadow = shadow
+        self.shadow_color = None
+
+        self.merged_surface = pygame.Surface((self.text.get_rect().width,
+                                              self.text.get_rect().height),
+                                              pygame.SRCALPHA)
+
+        if self.has_shadow:
+
+            self.shadow_color = pygame.color.Color(shadow_color)
+            self.shadow_text = self.font.render(text, False, self.shadow_color)
+            self.merged_surface.blit(self.shadow_text, (self.size // 8, 0))
+
+        self.merged_surface.blit(self.text, (0, 0))
 
         # Calcula a posição com base no alinhamento
         if alignment == Alignment.TOP_LEFT:
@@ -263,12 +284,19 @@ class Text():
 
         self.text = self.font.render(text, False, self.color)
 
+        if self.has_shadow:
+
+            self.shadow_text = self.font.render(text, False, self.shadow_color)
+            self.merged_surface.blit(self.shadow_text, (-10, 0))
+
+        self.merged_surface.blit(self.text, (0, 0))
+
     def get_render(self):
         '''
         Retorna a superfície do texto
         '''
 
-        return self.text
+        return self.merged_surface
 
     def get_position(self):
         '''
@@ -276,6 +304,7 @@ class Text():
         '''
 
         return self.position
+
 
 class Background():
 
@@ -291,12 +320,6 @@ class Background():
         self.sprites.add(graphics.BackgroundSprite((size[0] / 2 - 512, size[1] / 2 - 512),
                                                    (1024, 1024)))
 
-    def delete(self):
-        '''
-        Libera os sprites
-        '''
-
-        self.sprites.empty()
 
 class Bar():
 
@@ -332,22 +355,16 @@ class Bar():
 
     def update(self, value):
         '''
-        Atualiza o tamanho da barra com base em um valor de 0 a 100 (percentual)
+        Atualiza o tamanho da barra com base em um valor de 0 a 100 (percentual).
         '''
 
         self.sprites.sprites()[1].update(self.position, [int((self.size[0] / 100.0) * value), 35])
 
-    def delete(self):
-        '''
-        Libera os sprites
-        '''
-
-        self.sprites.empty()
 
 class MainMenu(UserInterface):
 
     '''
-    Define o menu
+    Define o menu.
     '''
 
     background: Background  # Plano de fundo
@@ -383,58 +400,108 @@ class MainMenu(UserInterface):
                                [0, 0],
                                15,
                                (255, 255, 255),
-                               screen_size))
+                               screen_size,
+                               False))
+
         self.texts.append(Text("FRANTIC FLYERS",
                                Alignment.CENTER,
                                (0, 200),
                                80,
-                               (138, 200, 230),
-                               screen_size))
-
-        self.texts.append(Text("FRANTIC FLYERS",
-                               Alignment.CENTER,
-                               (-10, 200),
-                               80,
                                (77, 111, 128),
-                               screen_size))
+                               screen_size,
+                               True,
+                               (138, 200, 230)))
+
         self.texts.append(Text("JOGAR",
                                Alignment.CENTER,
                                (0, 0),
                                40,
                                (230, 230, 230),
-                               screen_size))
+                               screen_size,
+                               False))
+
         self.texts.append(Text("SAIR",
-                                Alignment.CENTER,
-                                (0, -200),
-                                40,
-                                (230, 230, 230),
-                                screen_size))
+                               Alignment.CENTER,
+                               (0, -200),
+                               40,
+                               (230, 230, 230),
+                               screen_size,
+                               False))
 
-    def update(self, display):
-        '''
-        Renderiza o menu
-        '''
 
-        self.surface.fill(self.background_color)
-        self.background.sprites.draw(self.surface)
+class ModificationMenu(UserInterface):
 
-        for button in self.buttons:
+    '''
+    Define o menu de modificação.
+    '''
 
-            button.render(self.surface)
+    background: Background  # Plano de fundo
 
-        for text in self.texts:
+    def __init__(self, screen_size, background_color):
 
-            self.surface.blit(text.get_render(), text.get_position())
+        super().__init__((0, 0), screen_size, screen_size, background_color)
 
-        display.blit(self.surface, self.position)
+        # Inicializa o plano de fundo, botões e textos
 
-    def delete(self):
-        '''
-        Libera os sprites dos botões e do plano de fundo
-        '''
+        self.background = Background(screen_size)
 
-        for key in self.buttons:
+        self.buttons.append(Button(Alignment.TOP_LEFT,
+                                   (25, 25),
+                                   (100, 100),
+                                   Event.UI_RETURN_TO_MENU,
+                                   pygame.K_ESCAPE,
+                                   screen_size,
+                                   (108, 155, 179),
+                                   (138, 200, 230)))
 
-            self.buttons[key].delete()
+        self.buttons.append(Button(Alignment.CENTER,
+                                   (0, -200),
+                                   (400, 100),
+                                   Event.UI_PLAY,
+                                   pygame.K_RETURN,
+                                   screen_size,
+                                   (108, 155, 179),
+                                   (138, 200, 230)))
 
-        self.background.delete()
+        self.texts.append(Text("MODIFICAR",
+                               Alignment.CENTER,
+                               (0, 300),
+                               80,
+                               (77, 111, 128),
+                               screen_size,
+                               True,
+                               (138, 200, 230)))
+
+        self.texts.append(Text('<',
+                               Alignment.TOP_LEFT,
+                               (50, 40),
+                               50,
+                               (230, 230, 230),
+                               screen_size,
+                               False))
+
+        self.texts.append(Text("PONTOS:",
+                               Alignment.CENTER,
+                               (-400, 200),
+                               40,
+                               (77, 111, 128),
+                               screen_size,
+                               True,
+                               (138, 200, 230)))
+
+        self.texts.append(Text("XXX",
+                               Alignment.CENTER,
+                               (-225, 200),
+                               40,
+                               (77, 111, 128),
+                               screen_size,
+                               True,
+                               (138, 200, 230)))
+
+        self.texts.append(Text("JOGAR",
+                               Alignment.CENTER,
+                               (0, -200),
+                               40,
+                               (230, 230, 230),
+                               screen_size,
+                               False))
