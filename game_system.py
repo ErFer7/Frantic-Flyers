@@ -200,5 +200,5 @@ class GameManager():
 
                 self.data[modifier] -= 1
                 self.data["Modification Points"] += 1
-        
+
         self.file_system.write_file()

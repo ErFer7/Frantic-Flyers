@@ -40,3 +40,8 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 
 * Interface de pausa adicionada.
 * Correções de erros.
+
+## 0.7 - 16/05/2021
+
+* Interface de fim de jogo adicionada.
+* Correção de erros.

@@ -25,6 +25,7 @@ class UserInterfaceManager():
     modification_menu: None
     gameplay_interface: None
     pause_interface: None
+    gameover_interface: None
 
     def __init__(self, screen_size, version):
 
@@ -33,6 +34,7 @@ class UserInterfaceManager():
         self.modification_menu = ModificationMenu(screen_size, (92, 184, 230))
         self.gameplay_interface = GameplayInterface(screen_size, (0, 0, 0, 0))
         self.pause_interface = PauseInterface(screen_size, (92, 184, 230))
+        self.gameover_interface = GameoverInterface(screen_size, (92, 184, 230))
 
     def update(self, state, display, events, modification_data, score, life):
         '''
@@ -62,6 +64,10 @@ class UserInterfaceManager():
 
                 self.user_interface_event = self.pause_interface.check_buttons(event)
                 self.pause_interface.render(display)
+            elif state == State.GAMEOVER:
+
+                self.user_interface_event = self.gameover_interface.check_buttons(event)
+                self.gameover_interface.render(display)
 
     def get_event(self):
         '''
@@ -257,7 +263,7 @@ class Text():
                  color,
                  screen_size,
                  shadow,
-                 shadow_color = None):
+                 shadow_color=None):
 
         self.size = size
         self.position = None
@@ -269,7 +275,7 @@ class Text():
 
         self.merged_surface = pygame.Surface((self.text.get_rect().width,
                                               self.text.get_rect().height),
-                                              pygame.SRCALPHA)
+                                             pygame.SRCALPHA)
 
         if self.has_shadow:
 
@@ -282,7 +288,7 @@ class Text():
         self.position = UserInterfaceUtillities.calculate_position(alignment,
                                                                    position,
                                                                    (self.text.get_rect().width,
-                                                                   self.text.get_rect().height),
+                                                                    self.text.get_rect().height),
                                                                    screen_size)
 
     def update(self, text):
@@ -397,10 +403,10 @@ class UserInterfaceUtillities():
 
         calculated_position = ()
 
-        if alignment ==Alignment.CENTER:
+        if alignment == Alignment.CENTER:
 
             calculated_position = ((screen_size[0] - size[0]) / 2 + position[0],
-                                  (screen_size[1] - size[1]) / 2 - position[1])
+                                   (screen_size[1] - size[1]) / 2 - position[1])
         elif alignment == Alignment.TOP_LEFT:
 
             calculated_position = position
@@ -416,19 +422,19 @@ class UserInterfaceUtillities():
         elif alignment == Alignment.RIGHT:
 
             calculated_position = (screen_size[0] - position[0],
-                                  (screen_size[1] - size[1]) / 2 - position[1])
+                                   (screen_size[1] - size[1]) / 2 - position[1])
         elif alignment == Alignment.BOTTOM_LEFT:
 
             calculated_position = (position[0],
-                                  (screen_size[1] - size[1]) - position[1])
+                                   (screen_size[1] - size[1]) - position[1])
         elif alignment == Alignment.BOTTOM_RIGHT:
 
             calculated_position = (screen_size[0] - position[0],
-                                  (screen_size[1] - size[1]) - position[1])
+                                   (screen_size[1] - size[1]) - position[1])
         else:
 
             calculated_position = ((screen_size[0] - size[0]) / 2 + position[0],
-                                  (screen_size[1] - size[1]) - position[1])
+                                   (screen_size[1] - size[1]) - position[1])
 
         return calculated_position
 
@@ -536,13 +542,13 @@ class ModificationMenu(UserInterface):
                                       (138, 200, 230))
 
         self.texts["Title"] = Text("MODIFICAR",
-                                    Alignment.TOP,
-                                    (0, 25),
-                                    80,
-                                    (77, 111, 128),
-                                    screen_size,
-                                    True,
-                                    (138, 200, 230))
+                                   Alignment.TOP,
+                                   (0, 25),
+                                   80,
+                                   (77, 111, 128),
+                                   screen_size,
+                                   True,
+                                   (138, 200, 230))
 
         self.texts["Return"] = Text('<',
                                     Alignment.TOP_LEFT,
@@ -620,12 +626,12 @@ class ModificationMenu(UserInterface):
                                                    (138, 200, 230))
 
         self.texts["Velocity Plus"] = Text('+',
-                                            Alignment.RIGHT,
-                                            (167, 125),
-                                            40,
-                                            (230, 230, 230),
-                                            screen_size,
-                                            False)
+                                           Alignment.RIGHT,
+                                           (167, 125),
+                                           40,
+                                           (230, 230, 230),
+                                           screen_size,
+                                           False)
 
         self.texts["Damage"] = Text("DANO:",
                                     Alignment.LEFT,
@@ -686,13 +692,13 @@ class ModificationMenu(UserInterface):
                                          False)
 
         self.texts["Firerate"] = Text("CADÊNCIA:",
-                                       Alignment.LEFT,
-                                       (100, -25),
-                                       40,
-                                       (77, 111, 128),
-                                       screen_size,
-                                       True,
-                                       (138, 200, 230))
+                                      Alignment.LEFT,
+                                      (100, -25),
+                                      40,
+                                      (77, 111, 128),
+                                      screen_size,
+                                      True,
+                                      (138, 200, 230))
 
         self.texts["Firerate Number"] = Text("XXX",
                                              Alignment.LEFT,
@@ -703,11 +709,11 @@ class ModificationMenu(UserInterface):
                                              False)
 
         self.bars["Firerate"] = Bar(Alignment.LEFT,
-                                     (475, -30),
-                                     (500, 50),
-                                     (108, 155, 179),
-                                     (138, 200, 230),
-                                     screen_size)
+                                    (475, -30),
+                                    (500, 50),
+                                    (108, 155, 179),
+                                    (138, 200, 230),
+                                    screen_size)
 
         self.buttons["Reduce Firerate"] = Button(Alignment.RIGHT,
                                                  (350, -25),
@@ -851,13 +857,13 @@ class GameplayInterface(UserInterface):
                                   False)
 
         self.texts["Score"] = Text("SCORE: ",
-                                    Alignment.BOTTOM_LEFT,
-                                    (25, 80),
-                                    30,
-                                    (230, 230, 230),
-                                    screen_size,
-                                    True,
-                                    (130, 130, 130))
+                                   Alignment.BOTTOM_LEFT,
+                                   (25, 80),
+                                   30,
+                                   (230, 230, 230),
+                                   screen_size,
+                                   True,
+                                   (130, 130, 130))
 
         self.texts["Score Number"] = Text("XXXXXXX",
                                           Alignment.BOTTOM_LEFT,
@@ -878,12 +884,12 @@ class GameplayInterface(UserInterface):
                                        (138, 200, 230))
 
         self.texts["Pause"] = Text("II",
-                                    Alignment.BOTTOM_RIGHT,
-                                    (116, 50),
-                                    50,
-                                    (230, 230, 230),
-                                    screen_size,
-                                    False)
+                                   Alignment.BOTTOM_RIGHT,
+                                   (116, 50),
+                                   50,
+                                   (230, 230, 230),
+                                   screen_size,
+                                   False)
 
     def update(self, score, life):
         '''
@@ -893,6 +899,7 @@ class GameplayInterface(UserInterface):
         self.texts["Score Number"].update(f"{score:07}")
         self.bars["Life"].update(life)
         self.texts["Life"].update(str(life))
+
 
 class PauseInterface(UserInterface):
 
@@ -907,13 +914,13 @@ class PauseInterface(UserInterface):
         self.background = Background(screen_size)
 
         self.texts["Title"] = Text("PAUSADO",
-                                    Alignment.TOP,
-                                    (0, 25),
-                                    80,
-                                    (77, 111, 128),
-                                    screen_size,
-                                    True,
-                                    (138, 200, 230))
+                                   Alignment.TOP,
+                                   (0, 25),
+                                   80,
+                                   (77, 111, 128),
+                                   screen_size,
+                                   True,
+                                   (138, 200, 230))
 
         self.buttons["Resume"] = Button(Alignment.CENTER,
                                         (0, 100),
@@ -925,12 +932,12 @@ class PauseInterface(UserInterface):
                                         (138, 200, 230))
 
         self.texts["Resume"] = Text("CONTINUAR",
-                                  Alignment.CENTER,
-                                  (0, 100),
-                                  40,
-                                  (230, 230, 230),
-                                  screen_size,
-                                  False)
+                                    Alignment.CENTER,
+                                    (0, 100),
+                                    40,
+                                    (230, 230, 230),
+                                    screen_size,
+                                    False)
 
         self.buttons["Restart"] = Button(Alignment.CENTER,
                                          (0, -50),
@@ -942,18 +949,18 @@ class PauseInterface(UserInterface):
                                          (138, 200, 230))
 
         self.texts["Restart"] = Text("REINICIAR",
-                                      Alignment.CENTER,
-                                      (0, -50),
-                                      40,
-                                      (230, 230, 230),
-                                      screen_size,
-                                      False)
+                                     Alignment.CENTER,
+                                     (0, -50),
+                                     40,
+                                     (230, 230, 230),
+                                     screen_size,
+                                     False)
 
         self.buttons["End Gameplay"] = Button(Alignment.CENTER,
                                               (0, -200),
                                               (400, 100),
                                               Event.GP_GAMEOVER,
-                                              pygame.K_ESCAPE,
+                                              pygame.K_RETURN,
                                               screen_size,
                                               (108, 155, 179),
                                               (138, 200, 230))
@@ -965,3 +972,93 @@ class PauseInterface(UserInterface):
                                           (230, 230, 230),
                                           screen_size,
                                           False)
+
+
+class GameoverInterface(UserInterface):
+
+    '''
+    Interface de fim de jogo.
+    '''
+
+    def __init__(self, screen_size, background_color):
+
+        super().__init__((0, 0), screen_size, screen_size, background_color)
+
+        self.background = Background(screen_size)
+
+        self.texts["Title"] = Text("FIM DE JOGO",
+                                   Alignment.TOP,
+                                   (0, 25),
+                                   80,
+                                   (77, 111, 128),
+                                   screen_size,
+                                   True,
+                                   (138, 200, 230))
+
+        self.texts["Score"] = Text("SCORE:",
+                                   Alignment.LEFT,
+                                   (100, 200),
+                                   40,
+                                   (77, 111, 128),
+                                   screen_size,
+                                   True,
+                                   (138, 200, 230))
+
+        self.texts["Score Number"] = Text("XXXXXXX",
+                                          Alignment.LEFT,
+                                          (300, 200),
+                                          40,
+                                          (77, 111, 128),
+                                          screen_size,
+                                          False)
+
+        self.texts["Points"] = Text("PONTOS DE MODIFICAÇÃO:",
+                                    Alignment.LEFT,
+                                    (100, 100),
+                                    40,
+                                    (77, 111, 128),
+                                    screen_size,
+                                    True,
+                                    (138, 200, 230))
+
+        self.texts["Point Number"] = Text("XXX",
+                                          Alignment.LEFT,
+                                          (830, 100),
+                                          40,
+                                          (77, 111, 128),
+                                          screen_size,
+                                          False)
+
+        self.buttons["Restart"] = Button(Alignment.BOTTOM_LEFT,
+                                         (200, 100),
+                                         (400, 100),
+                                         Event.UI_RESTART,
+                                         pygame.K_r,
+                                         screen_size,
+                                         (108, 155, 179),
+                                         (138, 200, 230))
+
+        self.texts["Restart"] = Text("REINICIAR",
+                                     Alignment.BOTTOM_LEFT,
+                                     (250, 130),
+                                     40,
+                                     (230, 230, 230),
+                                     screen_size,
+                                     False)
+
+        self.buttons["Menu"] = Button(Alignment.BOTTOM_RIGHT,
+                                      (600, 100),
+                                      (400, 100),
+                                      Event.UI_RETURN_TO_MENU,
+                                      pygame.K_RETURN,
+                                      screen_size,
+                                      (108, 155, 179),
+                                      (138, 200, 230))
+
+        self.texts["Menu"] = Text("MENU",
+                                  Alignment.BOTTOM_RIGHT,
+                                  (470, 130),
+                                  40,
+                                  (230, 230, 230),
+                                  screen_size,
+                                  False)
