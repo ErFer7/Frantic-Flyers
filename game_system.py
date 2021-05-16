@@ -73,12 +73,12 @@ class GameManager():
 
             self.file_system.set_data(self.data)
 
-        self.entities = EntityManager()
-        self.physics = PhysicsManager()
+        screen_size = (self.display.get_width(), self.display.get_height())
+
+        self.entities = EntityManager(screen_size)
+        self.physics = PhysicsManager(-1.0)
         self.graphics = GraphicsManager()
-        self.user_interface = UserInterfaceManager((self.display.get_width(),
-                                                    self.display.get_height()),
-                                                   version)
+        self.user_interface = UserInterfaceManager(screen_size, version)
 
     def run_game(self, fps):
         '''
@@ -87,13 +87,15 @@ class GameManager():
 
         while self.state != State.EXIT:
 
+            events = pygame.event.get()
+
             # Atualiza cada sistema
-            self.entities.update()
-            self.physics.update()
-            self.graphics.update()
+            self.entities.update(events)
+            self.physics.update(self.state, fps, self.entities.get_entities())
+            self.graphics.update(self.state, self.display, self.entities.get_entities())
             self.user_interface.update(self.state,
                                        self.display,
-                                       pygame.event.get(),
+                                       events,
                                        self.data,
                                        self.entities.get_player_score(),
                                        self.entities.get_player_life())

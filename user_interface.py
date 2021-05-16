@@ -10,7 +10,7 @@ from enum import Enum
 
 import pygame
 
-import graphics  # Usar from
+from graphics import CustomSprite
 from states import Event, State
 
 
@@ -44,30 +44,45 @@ class UserInterfaceManager():
         self.user_interface_event = None
 
         # Atualiza os eventos
-        for event in events:
+        if state == State.MAIN_MENU:
 
-            if state == State.MAIN_MENU:
+            for event in events:
 
                 self.user_interface_event = self.main_menu.check_buttons(event)
-                self.main_menu.render(display)
-            elif state == State.MODIFICATION_MENU:
 
-                self.modification_menu.update(modification_data)
+            self.main_menu.render(display)
+        elif state == State.MODIFICATION_MENU:
+
+            self.modification_menu.update(modification_data)
+
+            for event in events:
+
                 self.user_interface_event = self.modification_menu.check_buttons(event)
-                self.modification_menu.render(display)
-            elif state == State.GAMEPLAY:
 
-                self.gameplay_interface.update(score, life)
+            self.modification_menu.render(display)
+        elif state == State.GAMEPLAY:
+
+            self.gameplay_interface.update(score, life)
+
+            for event in events:
+
                 self.user_interface_event = self.gameplay_interface.check_buttons(event)
-                self.gameplay_interface.render(display)
-            elif state == State.PAUSE:
+
+            self.gameplay_interface.render(display)
+        elif state == State.PAUSE:
+
+            for event in events:
 
                 self.user_interface_event = self.pause_interface.check_buttons(event)
-                self.pause_interface.render(display)
-            elif state == State.GAMEOVER:
+
+            self.pause_interface.render(display)
+        elif state == State.GAMEOVER:
+
+            for event in events:
 
                 self.user_interface_event = self.gameover_interface.check_buttons(event)
-                self.gameover_interface.render(display)
+
+            self.gameover_interface.render(display)
 
     def get_event(self):
         '''
@@ -195,10 +210,10 @@ class Button():
                                                                    size,
                                                                    screen_size)
 
-        self.sprites.add(graphics.RectangleSprite(self.position, size, foreground))
-        self.sprites.add(graphics.RectangleSprite((self.position[0] + 10, self.position[1] + 10),
-                                                  (size[0] - 20, size[1] - 20),
-                                                  background))
+        self.sprites.add(CustomSprite(self.position, size, color=foreground))
+        self.sprites.add(CustomSprite((self.position[0] + 10, self.position[1] + 10),
+                                      (size[0] - 20, size[1] - 20),
+                                      color=background))
 
     def is_pressed(self, event):
         '''
@@ -333,8 +348,9 @@ class Background():
     def __init__(self, size):
 
         self.sprites = pygame.sprite.RenderPlain()
-        self.sprites.add(graphics.BackgroundSprite((size[0] / 2 - 512, size[1] / 2 - 512),
-                                                   (1024, 1024)))
+        self.sprites.add(CustomSprite((size[0] / 2 - 512, size[1] / 2 - 512),
+                                      (1024, 1024),
+                                      os.path.join("Sprites", "Background", "UI_Background.png")))
 
 
 class Bar():
@@ -365,12 +381,12 @@ class Bar():
         self.internal_bar_position = (self.position[0] + 5,
                                       self.position[1] + 5)
 
-        self.sprites.add(graphics.RectangleSprite(self.position,
-                                                  self.size,
-                                                  border_color))
-        self.sprites.add(graphics.RectangleSprite(self.internal_bar_position,
-                                                  self.internal_bar_size,
-                                                  color))
+        self.sprites.add(CustomSprite(self.position,
+                                      self.size,
+                                      color=border_color))
+        self.sprites.add(CustomSprite(self.internal_bar_position,
+                                      self.internal_bar_size,
+                                      color=color))
 
     def update(self, value):
         '''

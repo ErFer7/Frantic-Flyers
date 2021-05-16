@@ -49,3 +49,9 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 ## 0.7.1 - 16/05/2021
 
 * Alterações no sistema de entidades.
+
+## 0.7.2 - 16/05/2021
+
+* Desenvolvimento inicial do gameplay.
+* Sistema de física adicionado.
+* Sistema gráfico adicionado.

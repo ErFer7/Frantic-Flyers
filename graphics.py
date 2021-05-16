@@ -4,10 +4,9 @@
 Módulo para o sistema gráfico.
 '''
 
-import os
-
 import pygame
 
+from states import State
 
 class GraphicsManager():
 
@@ -15,53 +14,63 @@ class GraphicsManager():
     Gerencia os graficos
     '''
 
-    def update(self):
+    render_group: pygame.sprite.RenderPlain
+
+    def __init__(self):
+
+        self.render_group = pygame.sprite.RenderPlain()
+
+    def update(self, state, display, entities):
         '''
         Atualiza os gráficos.
         '''
+        if state == State.GAMEPLAY:
+
+            display.fill((0, 0, 0))
+
+            for entity in entities:
+
+                self.render_group.add(entity.get_sprite())
+
+            self.render_group.draw(display)
+            self.render_group.empty()
 
 
-class RectangleSprite(pygame.sprite.Sprite):
+class CustomSprite(pygame.sprite.Sprite):
 
     '''
     Define um sprite retangular
     '''
 
-    def __init__(self, position, size, *color):
+    def __init__(self, position, size, image_path=None, color=None):
 
         super().__init__()
 
         # Inicializa as variáveis
-        self.image = pygame.Surface(size)
+
+        if image_path is not None:
+
+            self.image = pygame.transform.scale(pygame.image.load(image_path),
+                                                size)
+        else:
+
+            self.image = pygame.Surface(size)
         self.rect = self.image.get_rect()
         self.rect.x = position[0]
         self.rect.y = position[1]
-        self.image.fill(color)
 
-    def update(self, position, size):
+        if color is not None:
+
+            self.image.fill(color)
+
+    def update(self, position, size = None):
         '''
         Redefine o tamanho do sprite
         '''
 
-        self.image = pygame.transform.scale(self.image, size)
-        self.rect.x = position[0]
-        self.rect.y = position[1]
+        if size is not None:
 
+            self.image = pygame.transform.scale(self.image, size)
 
-class BackgroundSprite(pygame.sprite.Sprite):
-
-    '''
-    Sprite de plano de fundo do menu
-    '''
-
-    def __init__(self, position, size):
-
-        super().__init__()
-
-        self.image = pygame.transform.scale(pygame.image.load(os.path.join("Sprites",
-                                                                           "Background",
-                                                                           "UI_Background.png")),
-                                            size)
-        self.rect = self.image.get_rect()
         self.rect.x = position[0]
         self.rect.y = position[1]
