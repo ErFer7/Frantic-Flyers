@@ -28,7 +28,7 @@ class Event(Enum):
     UI_PAUSE = 13
     UI_RESUME = 14
     UI_RESTART = 15
-    GP_LOST = 16
+    GP_GAMEOVER = 16
 
 
 class State(Enum):
@@ -42,5 +42,4 @@ class State(Enum):
     GAMEPLAY = 3
     PAUSE = 4
     GAMEOVER = 5
-    RESTART = 6
-    EXIT = 7
+    EXIT = 6

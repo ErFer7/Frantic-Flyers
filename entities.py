@@ -41,7 +41,7 @@ class EntityManager():
         #Enemies.append(Enemy(posição, posição, vida, velocidade, dano, bala, freq-bala, estado, tiro-som, dano-som))
         pass
 
-    def update_entities(self):
+    def update(self):
         '''
         Atualiza as entidades e seus comportamentos
         '''

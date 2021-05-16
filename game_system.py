@@ -88,7 +88,7 @@ class GameManager():
         while self.state != State.EXIT:
 
             # Atualiza cada sistema
-            self.entities.update_entities() # Mudar para update
+            self.entities.update()
             self.physics.update()
             self.graphics.update()
             self.user_interface.update(self.state,
@@ -116,27 +116,35 @@ class GameManager():
                     elif event == Event.UI_REDUCE_VELOCITY:
 
                         self.change_modifiers("Velocity", False)
+                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_INCREASE_VELOCITY:
 
                         self.change_modifiers("Velocity", True)
+                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_REDUCE_DAMAGE:
 
                         self.change_modifiers("Damage", False)
+                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_INCREASE_DAMAGE:
 
                         self.change_modifiers("Damage", True)
+                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_REDUCE_FIRERATE:
 
                         self.change_modifiers("Firerate", False)
+                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_INCREASE_FIRERATE:
 
                         self.change_modifiers("Firerate", True)
+                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_REDUCE_ARMOR:
 
                         self.change_modifiers("Armor", False)
+                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_INCREASE_ARMOR:
 
                         self.change_modifiers("Armor", True)
+                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_PLAY:
 
                         self.state = State.GAMEPLAY
@@ -151,13 +159,17 @@ class GameManager():
                         # Tocar o áudio do botão aqui
                     elif event == Event.UI_RESUME:
 
-                        self.state = State.GAMEOVER
+                        self.state = State.GAMEPLAY
                         # Tocar o áudio do botão aqui
                     elif event == Event.UI_RESTART:
 
-                        self.state = State.RESTART
+                        # Resetar o gameplay aqui
+
+                        self.state = State.GAMEPLAY
                         # Tocar o áudio do botão aqui
-                    elif event == Event.GP_LOST:
+                    elif event == Event.GP_GAMEOVER:
+
+                        # Operações finais aqui
 
                         self.state = State.GAMEOVER
 

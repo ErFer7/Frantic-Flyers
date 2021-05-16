@@ -35,3 +35,8 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 * Interface de gameplay adicionada.
 * Gameplay manager removido.
 * Modificações no sistema de entidades.
+
+## 0.6 - 16/05/2021
+
+* Interface de pausa adicionada.
+* Correções de erros.

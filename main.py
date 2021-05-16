@@ -9,7 +9,6 @@ Projeto: Frantic Flyers.
 Para fazer:
 
 * Sistema de interfaces completo
-    * Pausa
     * Gameover
 * Sistema de entidades
     * Gerenciador
@@ -25,7 +24,7 @@ Para fazer:
 
 from game_system import GameManager
 
-VERSION = "v0.5"
+VERSION = "v0.6"
 
 game_manager = GameManager(VERSION)
 game_manager.run_game(60)

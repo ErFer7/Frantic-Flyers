@@ -24,6 +24,7 @@ class UserInterfaceManager():
     main_menu: None
     modification_menu: None
     gameplay_interface: None
+    pause_interface: None
 
     def __init__(self, screen_size, version):
 
@@ -31,6 +32,7 @@ class UserInterfaceManager():
         self.main_menu = MainMenu(screen_size, version, (92, 184, 230))
         self.modification_menu = ModificationMenu(screen_size, (92, 184, 230))
         self.gameplay_interface = GameplayInterface(screen_size, (0, 0, 0, 0))
+        self.pause_interface = PauseInterface(screen_size, (92, 184, 230))
 
     def update(self, state, display, events, modification_data, score, life):
         '''
@@ -56,6 +58,10 @@ class UserInterfaceManager():
                 self.gameplay_interface.update(score, life)
                 self.user_interface_event = self.gameplay_interface.check_buttons(event)
                 self.gameplay_interface.render(display)
+            elif state == State.PAUSE:
+
+                self.user_interface_event = self.pause_interface.check_buttons(event)
+                self.pause_interface.render(display)
 
     def get_event(self):
         '''
@@ -881,9 +887,81 @@ class GameplayInterface(UserInterface):
 
     def update(self, score, life):
         '''
-        Atualiza a interface de gameplay
+        Atualiza a interface de gameplay.
         '''
 
         self.texts["Score Number"].update(f"{score:07}")
         self.bars["Life"].update(life)
         self.texts["Life"].update(str(life))
+
+class PauseInterface(UserInterface):
+
+    '''
+    Interface da tela de pausa.
+    '''
+
+    def __init__(self, screen_size, background_color):
+
+        super().__init__((0, 0), screen_size, screen_size, background_color)
+
+        self.background = Background(screen_size)
+
+        self.texts["Title"] = Text("PAUSADO",
+                                    Alignment.TOP,
+                                    (0, 25),
+                                    80,
+                                    (77, 111, 128),
+                                    screen_size,
+                                    True,
+                                    (138, 200, 230))
+
+        self.buttons["Resume"] = Button(Alignment.CENTER,
+                                        (0, 100),
+                                        (400, 100),
+                                        Event.UI_RESUME,
+                                        pygame.K_ESCAPE,
+                                        screen_size,
+                                        (108, 155, 179),
+                                        (138, 200, 230))
+
+        self.texts["Resume"] = Text("CONTINUAR",
+                                  Alignment.CENTER,
+                                  (0, 100),
+                                  40,
+                                  (230, 230, 230),
+                                  screen_size,
+                                  False)
+
+        self.buttons["Restart"] = Button(Alignment.CENTER,
+                                         (0, -50),
+                                         (400, 100),
+                                         Event.UI_RESTART,
+                                         pygame.K_r,
+                                         screen_size,
+                                         (108, 155, 179),
+                                         (138, 200, 230))
+
+        self.texts["Restart"] = Text("REINICIAR",
+                                      Alignment.CENTER,
+                                      (0, -50),
+                                      40,
+                                      (230, 230, 230),
+                                      screen_size,
+                                      False)
+
+        self.buttons["End Gameplay"] = Button(Alignment.CENTER,
+                                              (0, -200),
+                                              (400, 100),
+                                              Event.GP_GAMEOVER,
+                                              pygame.K_ESCAPE,
+                                              screen_size,
+                                              (108, 155, 179),
+                                              (138, 200, 230))
+
+        self.texts["End Gameplay"] = Text("ENCERRAR",
+                                          Alignment.CENTER,
+                                          (0, -200),
+                                          40,
+                                          (230, 230, 230),
+                                          screen_size,
+                                          False)
