@@ -15,10 +15,12 @@ class GraphicsManager():
     '''
 
     render_group: pygame.sprite.RenderPlain
+    background_color: pygame.color.Color
 
-    def __init__(self):
+    def __init__(self, background_color):
 
         self.render_group = pygame.sprite.RenderPlain()
+        self.background_color = pygame.color.Color(background_color)
 
     def update(self, state, display, entities):
         '''
@@ -26,7 +28,7 @@ class GraphicsManager():
         '''
         if state == State.GAMEPLAY:
 
-            display.fill((0, 0, 0))
+            display.fill(self.background_color)
 
             for entity in entities:
 
@@ -50,7 +52,7 @@ class CustomSprite(pygame.sprite.Sprite):
 
         if image_path is not None:
 
-            self.image = pygame.transform.scale(pygame.image.load(image_path),
+            self.image = pygame.transform.scale(pygame.image.load(image_path).convert_alpha(),
                                                 size)
         else:
 

@@ -14,7 +14,7 @@ Para fazer:
     * Jogador
     * Inimigos
 * Sistema de física
-* Sistema de gráficos
+    * Colisões
 * Polir o jogo e consertar tudo
     * Testar performance
     * Testar memória
@@ -22,7 +22,7 @@ Para fazer:
 
 from game_system import GameManager
 
-VERSION = "v0.7.2"
+VERSION = "v0.8"
 
 game_manager = GameManager(VERSION)
 game_manager.run_game(60)

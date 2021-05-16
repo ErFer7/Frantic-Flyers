@@ -55,3 +55,10 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 * Desenvolvimento inicial do gameplay.
 * Sistema de física adicionado.
 * Sistema gráfico adicionado.
+
+## 0.8 - 16/05/2021
+
+* Mais desenvolvimento do sistema de entidades.
+* Jogador adicionado.
+* Cenário adicionado.
+* Otimização dos gráficos que permite mais sprites.

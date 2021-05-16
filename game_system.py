@@ -77,7 +77,7 @@ class GameManager():
 
         self.entities = EntityManager(screen_size)
         self.physics = PhysicsManager(-1.0)
-        self.graphics = GraphicsManager()
+        self.graphics = GraphicsManager((92, 184, 230))
         self.user_interface = UserInterfaceManager(screen_size, version)
 
     def run_game(self, fps):

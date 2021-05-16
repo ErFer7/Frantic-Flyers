@@ -6,6 +6,8 @@ Módulo para as entidades.
 
 import os
 
+from random import randint
+
 import pygame
 
 from graphics import CustomSprite
@@ -18,10 +20,11 @@ class EntityManager():
 
     player_life: int
     player_score: int
+    screen_size: tuple
     player: None
     enemies: list
     bullets: list
-    scenery: list
+    clouds: list
     inactive_enemies: list # Usado no pooling
     inactive_bullets: list # Usado no pooling
 
@@ -29,7 +32,8 @@ class EntityManager():
 
         self.player_life = 0 # Depois vamos pegar a vida do jogador de um jeito melhor
         self.player_score = 0
-        self.player = Player((screen_size[0] / 2, screen_size[1] / 2),
+        self.screen_size = screen_size
+        self.player = Player((self.screen_size[0] / 2, self.screen_size[1] / 2),
                              100,
                              100.0,
                              1.0,
@@ -42,9 +46,11 @@ class EntityManager():
                              os.path.join("Sprites", "Planes", "GER_bf109.png"))
         self.enemies = []
         self.bullets = []
-        self.scenery = []
+        self.clouds = []
         self.inactive_enemies = []
         self.inactive_bullets = []
+
+        self.generate_clouds(10)
 
     def get_player_life(self):
         '''
@@ -65,12 +71,29 @@ class EntityManager():
         Retorna uma lista de entidades que serão usadas na física
         '''
 
-        return [self.player] + self.enemies + self.bullets + self.scenery
+        return self.clouds + self.bullets + self.enemies + [self.player]
 
-    def scenery_generator(self):
+    def generate_clouds(self, cloud_count):
         '''
         Gera o cenário do jogo
         '''
+
+        for _ in range(cloud_count):
+
+            random_position = (randint(0, self.screen_size[0]),
+                               randint(-self.screen_size[1], self.screen_size[1]))
+            random_cloud_index = randint(0, 4)
+            path = os.path.join("Sprites", "Scenery", f"Cloud {random_cloud_index}.png")
+            image = pygame.image.load(path)
+            size = (image.get_width() * 3, image.get_height() * 3)
+            speed = (256.0 / image.get_width()) * 50.0
+
+            self.clouds.append(Cloud(random_position,
+                                     size,
+                                     path,
+                                     speed))
+
+            self.clouds.sort(key = lambda cloud: cloud.size[0], reverse=True)
 
     def enemy_generator(self):
         '''
@@ -86,7 +109,11 @@ class EntityManager():
         Atualiza as entidades e seus comportamentos
         '''
 
-        self.player.behaviour(events)
+        self.player.behaviour(events, self.screen_size)
+
+        for cloud in self.clouds:
+
+            cloud.behaviour(self.screen_size)
 
 
 class Entity():
@@ -236,7 +263,7 @@ class Player(Aircraft):
 
         # Demais definições aqui
 
-    def behaviour(self, events):
+    def behaviour(self, events, screen_size):
         '''
         Definição do comportamento do jogador
         '''
@@ -245,17 +272,17 @@ class Player(Aircraft):
 
             if event.type == pygame.KEYDOWN:
 
-                if event.key == pygame.K_a:  # Tecla "A". Movimento para a esquerda
-
+                if event.key == pygame.K_a:
+                    
                     self.direction[0] = -1
-                elif event.key == pygame.K_d:  # Tecla "D". Movimento para a direita
+                elif event.key == pygame.K_d and self.position[0] < screen_size[0]:
 
                     self.direction[0] = 1
 
-                if event.key == pygame.K_s:  # Tecla "S". Movimento para baixo
+                if event.key == pygame.K_s and self.position[1] < screen_size[1]:
 
                     self.direction[1] = 1
-                elif event.key == pygame.K_w:  # Tecla "W". Movimento para cima
+                elif event.key == pygame.K_w and self.position[1] > 0:
 
                     self.direction[1] = -1
             elif event.type == pygame.KEYUP:  # Caso uma tecla seja solta
@@ -267,6 +294,24 @@ class Player(Aircraft):
                 if event.key == pygame.K_s or event.key == pygame.K_w:  # Teclas verticais
 
                     self.direction[1] = 0
+
+            if self.position[0] <= 0:
+
+                self.direction[0] = 0
+                self.velocity[0] = self.speed
+            elif self.position[0] >= screen_size[0]:
+
+                self.direction[0] = 0
+                self.velocity[0] = -self.speed
+
+            if self.position[1] <= 0:
+
+                self.direction[1] = 0
+                self.velocity[1] = self.speed
+            elif self.position[1] >= screen_size[1]:
+
+                self.direction[1] = 0
+                self.velocity[1] = -self.speed
 
             if self.direction[0] != 0:
 
@@ -320,12 +365,28 @@ class Bullet(Entity):
     Bala
     '''
 
-class SceneryEntity(Entity):
+class Cloud(Entity):
 
     '''
-    Entidade do cenário.
+    Núvem.
     '''
 
-    def __init__(self, position, size, sprite_path):
+    constant_speed: float
+
+    def __init__(self, position, size, sprite_path, constant_speed):
 
         super().__init__(position, size, sprite_path, False)
+
+        self.constant_speed = constant_speed
+
+    def behaviour(self, screen_size):
+        '''
+        Comportamento da núvem.
+        '''
+
+        self.velocity[1] = self.constant_speed
+
+        if self.position[1] > screen_size[1] * 1.5:
+
+            self.set_position((randint(0, screen_size[0]),
+                               randint(-screen_size[1], -screen_size[1] // 2)))
