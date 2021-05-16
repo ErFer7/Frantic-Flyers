@@ -4,6 +4,7 @@
 Módulo para as entidades.
 '''
 
+import pygame
 
 class EntityManager():
 
@@ -13,15 +14,21 @@ class EntityManager():
 
     player_life: int
     player_score: int
+    player: None
+    enemies: list
+    bullets: list
+    inactive_enemies: list # Usado no pooling
+    inactive_bullets: list # Usado no pooling
 
     def __init__(self):
 
         self.player_life = 0 # Depois vamos pegar a vida do jogador de um jeito melhor
         self.player_score = 0
-
-        #self.You = Player(posição, posição, vida, velocidade, dano, bala, freq-bala, estado, tiro-som, dano-som)
-        #self.Enemies = []
-        # self.Enemies.enemy_generator()
+        #self.player = Player(posição, vida, velocidade, dano, bala, freq-bala, estado, tiro-som, dano-som)
+        self.enemies = []
+        self.bullets = []
+        self.inactive_enemies = []
+        self.inactive_bullets = []
 
     def get_player_life(self):
         '''
@@ -38,8 +45,13 @@ class EntityManager():
         return self.player_score
 
     def enemy_generator(self):
+        '''
+        Gera os inimigos
+        '''
+
+        # Podemos aproveitar pra usar um padrão de fábrica aqui
+
         #Enemies.append(Enemy(posição, posição, vida, velocidade, dano, bala, freq-bala, estado, tiro-som, dano-som))
-        pass
 
     def update(self):
         '''
@@ -47,14 +59,38 @@ class EntityManager():
         '''
 
 
-class Aircraft():
+class Entity():
+
+    '''
+    Entidade física.
+    '''
+
+    # Vamos precisar de uma classe desse jeito por causa das balas e outros objetos físicos
+
+    active: bool
+    position: list
+    velocity: list
+    hitbox: pygame.Rect # A hitbox pode ser o próprio sprite então temos que ver isso
+    sprites: pygame.sprite.RenderPlain
+
+    def __init__(self, position):
+
+        self.active = True
+        self.position = list(position)
+        self.velocity = [0, 0]
+        self.hitbox = None # Ainda vou ver melhor
+        self.sprites = pygame.sprite.RenderPlain()
+
+class Aircraft(Entity):
 
     '''
     Super Classe
     '''
 
-    def __init__(self, positionX, positionY, life, speed, damage, bullet_type, bullet_frequency, state, attack_sound, damage_sound):
-        self.position = [positionX, positionY]
+    def __init__(self, position, life, speed, damage, bullet_type, bullet_frequency, state, attack_sound, damage_sound):
+
+        super().__init__(position)
+
         self.life = life
         self.speed = speed
         self.damage = damage
@@ -72,8 +108,8 @@ class Player(Aircraft):
     Jogador
     '''
 
-    def __init__(self, positionX, positionY, life, speed, damage, bullet_type, bullet_frequency, state, attack_sound, damage_sound):
-        Aircraft.__init__(self, positionX, positionY, life, speed, damage,
+    def __init__(self, position, life, speed, damage, bullet_type, bullet_frequency, state, attack_sound, damage_sound):
+        Aircraft.__init__(self, position, life, speed, damage,
                           bullet_type, bullet_frequency, state, attack_sound, damage_sound)
         self.max_life = 100
 
@@ -84,6 +120,12 @@ class Enemy(Aircraft):
     Inimigos
     '''
 
-    def __init__(self, positionX, positionY, life, speed, damage, bullet_type, bullet_frequency, state, attack_sound, damage_sound):
-        Aircraft.__init__(self, positionX, positionY, life, speed, damage,
+    def __init__(self, position, life, speed, damage, bullet_type, bullet_frequency, state, attack_sound, damage_sound):
+        Aircraft.__init__(self, position, life, speed, damage,
                           bullet_type, bullet_frequency, state, attack_sound, damage_sound)
+
+class Bullet(Entity):
+
+    '''
+    Bala
+    '''

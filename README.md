@@ -45,3 +45,7 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 
 * Interface de fim de jogo adicionada.
 * Correção de erros.
+
+## 0.7.1 - 16/05/2021
+
+* Alterações no sistema de entidades.
