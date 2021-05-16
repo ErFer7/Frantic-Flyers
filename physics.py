@@ -11,7 +11,7 @@ class PhysicsManager():
     Gerencia a física
     '''
 
-    def update_physics(self):
+    def update(self):
         '''
         Atualiza a física.
         '''

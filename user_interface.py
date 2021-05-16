@@ -30,24 +30,25 @@ class UserInterfaceManager():
         self.main_menu = MainMenu(screen_size, version, (92, 184, 230))
         self.modification_menu = ModificationMenu(screen_size, (92, 184, 230))
 
-    def update_interface(self, state, display, events):
+    def update(self, state, display, events, points, velocity, damage, firerate, armor):
         '''
         Atualiza os eventos e gráficos da interface
         '''
 
+        self.user_interface_event = None
+
         # Atualiza os eventos
         for event in events:
-
-            self.user_interface_event = None
 
             if state == State.MAIN_MENU:
 
                 self.user_interface_event = self.main_menu.check_buttons(event)
-                self.main_menu.update(display)
+                self.main_menu.render(display)
             elif state == State.MODIFICATION_MENU:
 
+                self.modification_menu.update(points, velocity, damage, firerate, armor)
                 self.user_interface_event = self.modification_menu.check_buttons(event)
-                self.modification_menu.update(display)
+                self.modification_menu.render(display)
 
     def get_event(self):
         '''
@@ -66,6 +67,12 @@ class Alignment(Enum):
     CENTER = 1
     TOP_LEFT = 2
     TOP_RIGHT = 3
+    TOP = 4
+    LEFT = 5
+    RIGHT = 6
+    BOTTOM_LEFT = 7
+    BOTTOM_RIGHT = 8
+    BOTTOM = 9
 
 
 class UserInterface():
@@ -76,8 +83,9 @@ class UserInterface():
 
     position: tuple  # Posição
     screen_size: tuple  # Tamanho da tela
-    texts: list  # textos
-    buttons: list  # Botões
+    texts: dict  # textos
+    buttons: dict  # Botões
+    bars: dict
     surface: pygame.Surface  # Superfície
     background: None
     background_color: pygame.color.Color
@@ -86,13 +94,14 @@ class UserInterface():
 
         self.position = position
         self.screen_size = screen_size
-        self.texts = []
-        self.buttons = []
+        self.texts = {}
+        self.buttons = {}
+        self.bars = {}
         self.surface = pygame.Surface(size)
         self.background = None
         self.background_color = pygame.color.Color(background_color)
 
-    def update(self, display):
+    def render(self, display):
         '''
         Atualiza e renderiza a interface
         '''
@@ -103,13 +112,17 @@ class UserInterface():
 
             self.background.sprites.draw(self.surface)
 
-        for button in self.buttons:
+        for key in self.buttons:
 
-            button.render(self.surface)
+            self.buttons[key].render(self.surface)
 
-        for text in self.texts:
+        for key in self.bars:
 
-            self.surface.blit(text.get_render(), text.get_position())
+            self.bars[key].render(self.surface)
+
+        for key in self.texts:
+
+            self.surface.blit(self.texts[key].get_render(), self.texts[key].get_position())
 
         display.blit(self.surface, self.position)
 
@@ -120,11 +133,11 @@ class UserInterface():
 
         user_interface_event = None
 
-        for button in self.buttons:
+        for key in self.buttons:
 
-            if button.is_pressed(event):
+            if self.buttons[key].is_pressed(event):
 
-                user_interface_event = button.get_event()
+                user_interface_event = self.buttons[key].get_event()
                 break
 
         return user_interface_event
@@ -158,17 +171,10 @@ class Button():
         self.key = key
         self.sprites = pygame.sprite.RenderPlain()
 
-        # Calcula a posiçõa com base no alinhamento
-        if alignment == Alignment.TOP_LEFT:
-
-            self.position = position
-        elif alignment == Alignment.TOP_RIGHT:
-
-            self.position = (screen_size[0] - position[0], position[1])
-        else:
-
-            self.position = ((screen_size[0] - size[0]) / 2 + position[0],
-                             (screen_size[1] - size[1]) / 2 - position[1])
+        self.position = UserInterfaceUtillities.calculate_position(alignment,
+                                                                   position,
+                                                                   size,
+                                                                   screen_size)
 
         self.sprites.add(graphics.RectangleSprite(self.position, size, foreground))
         self.sprites.add(graphics.RectangleSprite((self.position[0] + 10, self.position[1] + 10),
@@ -187,10 +193,7 @@ class Button():
 
             if event.type == pygame.MOUSEBUTTONDOWN:
 
-                is_clicked = event.pos[0] >= self.position[0] and       \
-                    event.pos[0] <= self.position[0] + self.size[0] and \
-                    event.pos[1] >= self.position[1] and                \
-                    event.pos[1] <= self.position[1] + self.size[1]
+                is_clicked = self.sprites.sprites()[0].rect.collidepoint(event.pos)
             elif event.type == pygame.KEYDOWN:
 
                 key_is_pressed = self.key == event.key
@@ -263,22 +266,18 @@ class Text():
 
         self.merged_surface.blit(self.text, (0, 0))
 
-        # Calcula a posição com base no alinhamento
-        if alignment == Alignment.TOP_LEFT:
-
-            self.position = position
-        elif alignment == Alignment.TOP_RIGHT:
-
-            self.position = (screen_size[0] - position[0], position[1])
-        else:
-
-            self.position = ((screen_size[0] - self.text.get_rect().width) / 2 + position[0],
-                             (screen_size[1] - self.text.get_rect().height) / 2 - position[1])
+        self.position = UserInterfaceUtillities.calculate_position(alignment,
+                                                                   position,
+                                                                   (self.text.get_rect().width,
+                                                                   self.text.get_rect().height),
+                                                                   screen_size)
 
     def update(self, text):
         '''
         Atualiza o texto
         '''
+
+        self.merged_surface.fill((0, 0, 0, 0))
 
         self.text = self.font.render(text, False, self.color)
 
@@ -334,20 +333,13 @@ class Bar():
         self.size = size
         self.sprites = pygame.sprite.RenderPlain()
 
-        # Define a posição com base no alinhamento
-        if alignment == Alignment.TOP_LEFT:
-
-            self.position = position
-        elif alignment == Alignment.TOP_RIGHT:
-
-            self.position = (screen_size[0] - position[0], position[1])
-        else:
-
-            self.position = ((screen_size[0] - self.size[0]) / 2 + position[0],
-                             (screen_size[1] - self.size[1]) / 2 - position[1])
+        self.position = UserInterfaceUtillities.calculate_position(alignment,
+                                                                   position,
+                                                                   size,
+                                                                   screen_size)
 
         self.sprites.add(graphics.RectangleSprite((self.position[0] - 5, self.position[1] - 5),
-                                                  (self.size[0] + 10, self.size[1] + 10),
+                                                  (self.size[0] - 5, self.size[1] - 5),
                                                   border_color))
         self.sprites.add(graphics.RectangleSprite(self.position, self.size, color))
 
@@ -357,6 +349,63 @@ class Bar():
         '''
 
         self.sprites.sprites()[1].update(self.position, [int((self.size[0] / 100.0) * value), 35])
+
+    def render(self, surface):
+        '''
+        Renderiza a barra
+        '''
+
+        self.sprites.draw(surface)
+
+
+class UserInterfaceUtillities():
+
+    '''
+    Utilidades do sistema de interface.
+    '''
+
+    @staticmethod
+    def calculate_position(alignment, position, size, screen_size):
+        '''
+        Calcula a posição com base no alinhamento.
+        '''
+
+        calculated_position = ()
+
+        if alignment ==Alignment.CENTER:
+
+            calculated_position = ((screen_size[0] - size[0]) / 2 + position[0],
+                                  (screen_size[1] - size[1]) / 2 - position[1])
+        elif alignment == Alignment.TOP_LEFT:
+
+            calculated_position = position
+        elif alignment == Alignment.TOP_RIGHT:
+
+            calculated_position = (screen_size[0] - position[0], position[1])
+        elif alignment == Alignment.TOP:
+
+            calculated_position = ((screen_size[0] - size[0]) / 2 + position[0], position[1])
+        elif alignment == Alignment.LEFT:
+
+            calculated_position = (position[0], (screen_size[1] - size[1]) / 2 - position[1])
+        elif alignment == Alignment.RIGHT:
+
+            calculated_position = (screen_size[0] - position[0],
+                                  (screen_size[1] - size[1]) / 2 - position[1])
+        elif alignment == Alignment.BOTTOM_LEFT:
+
+            calculated_position = (position[0],
+                                  (screen_size[1] - size[1]) - position[1])
+        elif alignment == Alignment.BOTTOM_RIGHT:
+
+            calculated_position = (screen_size[0] - position[0],
+                                  (screen_size[1] - size[1]) - position[1])
+        else:
+
+            calculated_position = ((screen_size[0] - size[0]) / 2 + position[0],
+                                  (screen_size[1] - size[1]) - position[1])
+
+        return calculated_position
 
 
 class MainMenu(UserInterface):
@@ -375,56 +424,56 @@ class MainMenu(UserInterface):
 
         self.background = Background(screen_size)
 
-        self.buttons.append(Button(Alignment.CENTER,
-                                   (0, 0),
-                                   (400, 100),
-                                   Event.UI_MODIFY,
-                                   pygame.K_RETURN,
+        self.buttons["Modify"] = Button(Alignment.CENTER,
+                                        (0, 0),
+                                        (400, 100),
+                                        Event.UI_MODIFY,
+                                        pygame.K_RETURN,
+                                        screen_size,
+                                        (108, 155, 179),
+                                        (138, 200, 230))
+
+        self.buttons["Quit"] = Button(Alignment.CENTER,
+                                      (0, -200),
+                                      (400, 100),
+                                      Event.UI_EXIT,
+                                      pygame.K_ESCAPE,
+                                      screen_size,
+                                      (108, 155, 179),
+                                      (138, 200, 230))
+
+        self.texts["Version"] = Text(f"{version}",
+                                     Alignment.TOP_LEFT,
+                                     [0, 0],
+                                     15,
+                                     (255, 255, 255),
+                                     screen_size,
+                                     False)
+
+        self.texts["Title"] = Text("FRANTIC FLYERS",
+                                   Alignment.TOP,
+                                   (0, 100),
+                                   80,
+                                   (77, 111, 128),
                                    screen_size,
-                                   (108, 155, 179),
-                                   (138, 200, 230)))
+                                   True,
+                                   (138, 200, 230))
 
-        self.buttons.append(Button(Alignment.CENTER,
-                                   (0, -200),
-                                   (400, 100),
-                                   Event.UI_EXIT,
-                                   pygame.K_ESCAPE,
-                                   screen_size,
-                                   (108, 155, 179),
-                                   (138, 200, 230)))
+        self.texts["Modify"] = Text("JOGAR",
+                                    Alignment.CENTER,
+                                    (0, 0),
+                                    40,
+                                    (230, 230, 230),
+                                    screen_size,
+                                    False)
 
-        self.texts.append(Text(f"{version}",
-                               Alignment.TOP_LEFT,
-                               [0, 0],
-                               15,
-                               (255, 255, 255),
-                               screen_size,
-                               False))
-
-        self.texts.append(Text("FRANTIC FLYERS",
-                               Alignment.CENTER,
-                               (0, 200),
-                               80,
-                               (77, 111, 128),
-                               screen_size,
-                               True,
-                               (138, 200, 230)))
-
-        self.texts.append(Text("JOGAR",
-                               Alignment.CENTER,
-                               (0, 0),
-                               40,
-                               (230, 230, 230),
-                               screen_size,
-                               False))
-
-        self.texts.append(Text("SAIR",
-                               Alignment.CENTER,
-                               (0, -200),
-                               40,
-                               (230, 230, 230),
-                               screen_size,
-                               False))
+        self.texts["Quit"] = Text("SAIR",
+                                  Alignment.CENTER,
+                                  (0, -200),
+                                  40,
+                                  (230, 230, 230),
+                                  screen_size,
+                                  False)
 
 
 class ModificationMenu(UserInterface):
@@ -443,63 +492,309 @@ class ModificationMenu(UserInterface):
 
         self.background = Background(screen_size)
 
-        self.buttons.append(Button(Alignment.TOP_LEFT,
-                                   (25, 25),
-                                   (100, 100),
-                                   Event.UI_RETURN_TO_MENU,
-                                   pygame.K_ESCAPE,
+        self.buttons["Return"] = Button(Alignment.TOP_LEFT,
+                                        (25, 25),
+                                        (100, 100),
+                                        Event.UI_RETURN_TO_MENU,
+                                        pygame.K_ESCAPE,
+                                        screen_size,
+                                        (108, 155, 179),
+                                        (138, 200, 230))
+
+        self.buttons["Play"] = Button(Alignment.BOTTOM,
+                                      (0, 100),
+                                      (400, 100),
+                                      Event.UI_PLAY,
+                                      pygame.K_RETURN,
+                                      screen_size,
+                                      (108, 155, 179),
+                                      (138, 200, 230))
+
+        self.texts["Title"] = Text("MODIFICAR",
+                                    Alignment.TOP,
+                                    (0, 25),
+                                    80,
+                                    (77, 111, 128),
+                                    screen_size,
+                                    True,
+                                    (138, 200, 230))
+
+        self.texts["Return"] = Text('<',
+                                    Alignment.TOP_LEFT,
+                                    (50, 40),
+                                    50,
+                                    (230, 230, 230),
+                                    screen_size,
+                                    False)
+
+        self.texts["Points"] = Text("PONTOS:",
+                                    Alignment.LEFT,
+                                    (100, 200),
+                                    40,
+                                    (77, 111, 128),
+                                    screen_size,
+                                    True,
+                                    (138, 200, 230))
+
+        self.texts["Point Number"] = Text("XXX",
+                                          Alignment.LEFT,
+                                          (350, 200),
+                                          40,
+                                          (77, 111, 128),
+                                          screen_size,
+                                          False)
+
+        self.texts["Velocity"] = Text("VELOCIDADE:",
+                                      Alignment.LEFT,
+                                      (100, 125),
+                                      40,
+                                      (77, 111, 128),
+                                      screen_size,
+                                      True,
+                                      (138, 200, 230))
+
+        self.texts["Velocity Number"] = Text("XXX",
+                                             Alignment.LEFT,
+                                             (685, 125),
+                                             30,
+                                             (230, 230, 230),
+                                             screen_size,
+                                             False)
+
+        self.bars["Velocity"] = Bar(Alignment.LEFT,
+                                    (475, 120),
+                                    (500, 50),
+                                    (108, 155, 179),
+                                    (138, 200, 230),
+                                    screen_size)
+
+        self.buttons["Reduce Velocity"] = Button(Alignment.RIGHT,
+                                                 (350, 125),
+                                                 (100, 50),
+                                                 Event.UI_REDUCE_VELOCITY,
+                                                 pygame.K_y,
+                                                 screen_size,
+                                                 (108, 155, 179),
+                                                 (138, 200, 230))
+
+        self.texts["Velocity Minus"] = Text('-',
+                                            Alignment.RIGHT,
+                                            (317, 125),
+                                            40,
+                                            (230, 230, 230),
+                                            screen_size,
+                                            False)
+
+        self.buttons["Increase Velocity"] = Button(Alignment.RIGHT,
+                                                   (200, 125),
+                                                   (100, 50),
+                                                   Event.UI_INCREASE_VELOCITY,
+                                                   pygame.K_h,
+                                                   screen_size,
+                                                   (108, 155, 179),
+                                                   (138, 200, 230))
+
+        self.texts["Velocity Plus"] = Text('+',
+                                            Alignment.RIGHT,
+                                            (167, 125),
+                                            40,
+                                            (230, 230, 230),
+                                            screen_size,
+                                            False)
+
+        self.texts["Damage"] = Text("DANO:",
+                                    Alignment.LEFT,
+                                    (100, 50),
+                                    40,
+                                    (77, 111, 128),
+                                    screen_size,
+                                    True,
+                                    (138, 200, 230))
+
+        self.texts["Damage Number"] = Text("XXX",
+                                           Alignment.LEFT,
+                                           (685, 50),
+                                           30,
+                                           (230, 230, 230),
+                                           screen_size,
+                                           False)
+
+        self.bars["Damage"] = Bar(Alignment.LEFT,
+                                  (475, 45),
+                                  (500, 50),
+                                  (108, 155, 179),
+                                  (138, 200, 230),
+                                  screen_size)
+
+        self.buttons["Reduce Damage"] = Button(Alignment.RIGHT,
+                                               (350, 50),
+                                               (100, 50),
+                                               Event.UI_REDUCE_DAMAGE,
+                                               pygame.K_u,
+                                               screen_size,
+                                               (108, 155, 179),
+                                               (138, 200, 230))
+
+        self.texts["Damage Minus"] = Text('-',
+                                          Alignment.RIGHT,
+                                          (317, 50),
+                                          40,
+                                          (230, 230, 230),
+                                          screen_size,
+                                          False)
+
+        self.buttons["Increase Damage"] = Button(Alignment.RIGHT,
+                                                 (200, 50),
+                                                 (100, 50),
+                                                 Event.UI_INCREASE_DAMAGE,
+                                                 pygame.K_j,
+                                                 screen_size,
+                                                 (108, 155, 179),
+                                                 (138, 200, 230))
+
+        self.texts["Damage Plus"] = Text('+',
+                                         Alignment.RIGHT,
+                                         (167, 50),
+                                         40,
+                                         (230, 230, 230),
+                                         screen_size,
+                                         False)
+
+        self.texts["Firerate"] = Text("CADÊNCIA:",
+                                       Alignment.LEFT,
+                                       (100, -25),
+                                       40,
+                                       (77, 111, 128),
+                                       screen_size,
+                                       True,
+                                       (138, 200, 230))
+
+        self.texts["Firerate Number"] = Text("XXX",
+                                             Alignment.LEFT,
+                                             (685, -25),
+                                             30,
+                                             (230, 230, 230),
+                                             screen_size,
+                                             False)
+
+        self.bars["Firerate"] = Bar(Alignment.LEFT,
+                                     (475, -30),
+                                     (500, 50),
+                                     (108, 155, 179),
+                                     (138, 200, 230),
+                                     screen_size)
+
+        self.buttons["Reduce Firerate"] = Button(Alignment.RIGHT,
+                                                 (350, -25),
+                                                 (100, 50),
+                                                 Event.UI_REDUCE_FIRERATE,
+                                                 pygame.K_i,
+                                                 screen_size,
+                                                 (108, 155, 179),
+                                                 (138, 200, 230))
+
+        self.texts["Firerate Minus"] = Text('-',
+                                            Alignment.RIGHT,
+                                            (317, -25),
+                                            40,
+                                            (230, 230, 230),
+                                            screen_size,
+                                            False)
+
+        self.buttons["Increase Firerate"] = Button(Alignment.RIGHT,
+                                                   (200, -25),
+                                                   (100, 50),
+                                                   Event.UI_INCREASE_FIRERATE,
+                                                   pygame.K_k,
+                                                   screen_size,
+                                                   (108, 155, 179),
+                                                   (138, 200, 230))
+
+        self.texts["Firerate Plus"] = Text('+',
+                                           Alignment.RIGHT,
+                                           (167, -25),
+                                           40,
+                                           (230, 230, 230),
+                                           screen_size,
+                                           False)
+
+        self.texts["Armor"] = Text("ARMADURA:",
+                                   Alignment.LEFT,
+                                   (100, -100),
+                                   40,
+                                   (77, 111, 128),
                                    screen_size,
-                                   (108, 155, 179),
-                                   (138, 200, 230)))
+                                   True,
+                                   (138, 200, 230))
 
-        self.buttons.append(Button(Alignment.CENTER,
-                                   (0, -200),
-                                   (400, 100),
-                                   Event.UI_PLAY,
-                                   pygame.K_RETURN,
-                                   screen_size,
-                                   (108, 155, 179),
-                                   (138, 200, 230)))
+        self.texts["Armor Number"] = Text("XXX",
+                                          Alignment.LEFT,
+                                          (685, -100),
+                                          30,
+                                          (230, 230, 230),
+                                          screen_size,
+                                          False)
 
-        self.texts.append(Text("MODIFICAR",
-                               Alignment.CENTER,
-                               (0, 300),
-                               80,
-                               (77, 111, 128),
-                               screen_size,
-                               True,
-                               (138, 200, 230)))
+        self.bars["Armor"] = Bar(Alignment.LEFT,
+                                 (475, -105),
+                                 (500, 50),
+                                 (108, 155, 179),
+                                 (138, 200, 230),
+                                 screen_size)
 
-        self.texts.append(Text('<',
-                               Alignment.TOP_LEFT,
-                               (50, 40),
-                               50,
-                               (230, 230, 230),
-                               screen_size,
-                               False))
+        self.buttons["Reduce Armor"] = Button(Alignment.RIGHT,
+                                              (350, -100),
+                                              (100, 50),
+                                              Event.UI_REDUCE_ARMOR,
+                                              pygame.K_o,
+                                              screen_size,
+                                              (108, 155, 179),
+                                              (138, 200, 230))
 
-        self.texts.append(Text("PONTOS:",
-                               Alignment.CENTER,
-                               (-400, 200),
-                               40,
-                               (77, 111, 128),
-                               screen_size,
-                               True,
-                               (138, 200, 230)))
+        self.texts["Armor Minus"] = Text('-',
+                                         Alignment.RIGHT,
+                                         (317, -100),
+                                         40,
+                                         (230, 230, 230),
+                                         screen_size,
+                                         False)
 
-        self.texts.append(Text("XXX",
-                               Alignment.CENTER,
-                               (-225, 200),
-                               40,
-                               (77, 111, 128),
-                               screen_size,
-                               True,
-                               (138, 200, 230)))
+        self.buttons["Increase Armor"] = Button(Alignment.RIGHT,
+                                                (200, -100),
+                                                (100, 50),
+                                                Event.UI_INCREASE_ARMOR,
+                                                pygame.K_l,
+                                                screen_size,
+                                                (108, 155, 179),
+                                                (138, 200, 230))
 
-        self.texts.append(Text("JOGAR",
-                               Alignment.CENTER,
-                               (0, -200),
-                               40,
-                               (230, 230, 230),
-                               screen_size,
-                               False))
+        self.texts["Armor Plus"] = Text('+',
+                                        Alignment.RIGHT,
+                                        (167, -100),
+                                        40,
+                                        (230, 230, 230),
+                                        screen_size,
+                                        False)
+
+        self.texts["Play"] = Text("JOGAR",
+                                  Alignment.BOTTOM,
+                                  (0, 130),
+                                  40,
+                                  (230, 230, 230),
+                                  screen_size,
+                                  False)
+
+    def update(self, points, velocity, damage, firerate, armor):
+        '''
+        Atualiza os dados dos componentes da interface.
+        '''
+
+        self.texts["Point Number"].update(str(points))
+        self.texts["Velocity Number"].update(str(velocity))
+        self.bars["Velocity"].update(velocity)
+        self.texts["Damage Number"].update(str(damage))
+        self.bars["Damage"].update(damage)
+        self.texts["Firerate Number"].update(str(firerate))
+        self.bars["Firerate"].update(firerate)
+        self.texts["Armor Number"].update(str(armor))
+        self.bars["Armor"].update(armor)

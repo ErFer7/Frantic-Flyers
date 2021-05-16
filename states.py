@@ -15,12 +15,20 @@ class Event(Enum):
 
     UI_MODIFY = 1
     UI_RETURN_TO_MENU = 2
-    UI_PLAY = 3
-    UI_EXIT = 4
-    UI_PAUSE = 5
-    UI_RESUME = 6
-    UI_RESTART = 7
-    GP_LOST = 8
+    UI_REDUCE_VELOCITY = 3
+    UI_INCREASE_VELOCITY = 4
+    UI_REDUCE_DAMAGE = 5
+    UI_INCREASE_DAMAGE = 6
+    UI_REDUCE_FIRERATE = 7
+    UI_INCREASE_FIRERATE = 8
+    UI_REDUCE_ARMOR = 9
+    UI_INCREASE_ARMOR = 10
+    UI_PLAY = 11
+    UI_EXIT = 12
+    UI_PAUSE = 13
+    UI_RESUME = 14
+    UI_RESTART = 15
+    GP_LOST = 16
 
 
 class State(Enum):

@@ -24,3 +24,8 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 ## 0.3.2 - 15/05/2021
 
 * Correção de um erro no sistema de arquivo e dados.
+
+## 0.4 - 15/05/2021
+
+* Interface e sistema de modificação do jogador adicionados.
+* Definições do sistema de entidades.

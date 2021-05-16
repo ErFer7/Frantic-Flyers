@@ -15,7 +15,7 @@ class GraphicsManager():
     Gerencia os graficos
     '''
 
-    def update_graphics(self):
+    def update(self):
         '''
         Atualiza os gráficos.
         '''

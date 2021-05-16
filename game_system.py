@@ -62,10 +62,11 @@ class GameManager():
         # Inicializa o jogo com os dados padrões e depois verifica se é necessário
         # Carregar os dados da memória permanente.
         self.data = {"Modification Points": 0,
-                     "Agility": 0,
-                     "Damage": 0,
-                     "Fire Rate": 0,
-                     "Armor": 0}
+                     "Velocity": 25,
+                     "Damage": 25,
+                     "Firerate": 25,
+                     "Armor": 25,
+                     "Maximum Score": 0}
 
         if len(self.file_system.get_data()) > 0:
 
@@ -87,13 +88,18 @@ class GameManager():
         while self.state != State.EXIT:
 
             # Atualiza cada sistema
-            self.gameplay.update_gameplay()
-            self.entities.update_entities()
-            self.physics.update_physics()
-            self.graphics.update_graphics()
-            self.user_interface.update_interface(self.state,
-                                                 self.display,
-                                                 pygame.event.get())
+            self.gameplay.update()
+            self.entities.update_entities() # Mudar para update
+            self.physics.update()
+            self.graphics.update()
+            self.user_interface.update(self.state,
+                                       self.display,
+                                       pygame.event.get(),
+                                       self.data["Modification Points"],
+                                       self.data["Velocity"],
+                                       self.data["Damage"],
+                                       self.data["Firerate"],
+                                       self.data["Armor"])
 
             # Obtém os eventos do jogo
             self.events.append(self.user_interface.get_event())
@@ -110,6 +116,30 @@ class GameManager():
 
                         self.state = State.MAIN_MENU
                         # Tocar o áudio do botão aqui
+                    elif event == Event.UI_REDUCE_VELOCITY:
+
+                        self.change_modifiers("Velocity", False)
+                    elif event == Event.UI_INCREASE_VELOCITY:
+
+                        self.change_modifiers("Velocity", True)
+                    elif event == Event.UI_REDUCE_DAMAGE:
+
+                        self.change_modifiers("Damage", False)
+                    elif event == Event.UI_INCREASE_DAMAGE:
+
+                        self.change_modifiers("Damage", True)
+                    elif event == Event.UI_REDUCE_FIRERATE:
+
+                        self.change_modifiers("Firerate", False)
+                    elif event == Event.UI_INCREASE_FIRERATE:
+
+                        self.change_modifiers("Firerate", True)
+                    elif event == Event.UI_REDUCE_ARMOR:
+
+                        self.change_modifiers("Armor", False)
+                    elif event == Event.UI_INCREASE_ARMOR:
+
+                        self.change_modifiers("Armor", True)
                     elif event == Event.UI_PLAY:
 
                         self.state = State.GAMEPLAY
@@ -134,6 +164,8 @@ class GameManager():
 
                         self.state = State.GAMEOVER
 
+                    break
+
             self.events.clear()
 
             pygame.display.update()
@@ -142,6 +174,26 @@ class GameManager():
         pygame.quit()
         sys.exit()
 
+    def change_modifiers(self, modifier, increase):
+        '''
+        Muda os modificadores.
+        '''
+
+        if increase:
+
+            if self.data[modifier] < 100 and self.data["Modification Points"] > 0:
+
+                self.data[modifier] += 1
+                self.data["Modification Points"] -= 1
+        else:
+
+            if self.data[modifier] > 0:
+
+                self.data[modifier] -= 1
+                self.data["Modification Points"] += 1
+        
+        self.file_system.write_file()
+
 
 class GameplayManager():
 
@@ -149,7 +201,7 @@ class GameplayManager():
     Classe que gerencia o gameplay.
     '''
 
-    def update_gameplay(self):
+    def update(self):
         '''
         Atualiza o gameplay.
         '''
