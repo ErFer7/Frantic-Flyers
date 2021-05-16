@@ -11,15 +11,35 @@ class EntityManager():
     Gerencia as entidades
     '''
 
+    player_life: int
+    player_score: int
+
     def __init__(self):
+
+        self.player_life = 0 # Depois vamos pegar a vida do jogador de um jeito melhor
+        self.player_score = 0
+
         #self.You = Player(posição, posição, vida, velocidade, dano, bala, freq-bala, estado, tiro-som, dano-som)
         #self.Enemies = []
         # self.Enemies.enemy_generator()
-        return
+
+    def get_player_life(self):
+        '''
+        Retorna a vida do jogador
+        '''
+
+        return self.player_life
+
+    def get_player_score(self):
+        '''
+        Retorna a pontuação do jogador
+        '''
+
+        return self.player_score
 
     def enemy_generator(self):
         #Enemies.append(Enemy(posição, posição, vida, velocidade, dano, bala, freq-bala, estado, tiro-som, dano-som))
-        return
+        pass
 
     def update_entities(self):
         '''
@@ -28,6 +48,7 @@ class EntityManager():
 
 
 class Aircraft():
+
     '''
     Super Classe
     '''
@@ -46,6 +67,7 @@ class Aircraft():
 
 
 class Player(Aircraft):
+
     '''
     Jogador
     '''
@@ -57,6 +79,7 @@ class Player(Aircraft):
 
 
 class Enemy(Aircraft):
+
     '''
     Inimigos
     '''

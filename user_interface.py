@@ -23,14 +23,16 @@ class UserInterfaceManager():
     user_interface_event: Event
     main_menu: None
     modification_menu: None
+    gameplay_interface: None
 
     def __init__(self, screen_size, version):
 
         self.user_interface_event = None
         self.main_menu = MainMenu(screen_size, version, (92, 184, 230))
         self.modification_menu = ModificationMenu(screen_size, (92, 184, 230))
+        self.gameplay_interface = GameplayInterface(screen_size, (0, 0, 0, 0))
 
-    def update(self, state, display, events, points, velocity, damage, firerate, armor):
+    def update(self, state, display, events, modification_data, score, life):
         '''
         Atualiza os eventos e gráficos da interface
         '''
@@ -46,9 +48,14 @@ class UserInterfaceManager():
                 self.main_menu.render(display)
             elif state == State.MODIFICATION_MENU:
 
-                self.modification_menu.update(points, velocity, damage, firerate, armor)
+                self.modification_menu.update(modification_data)
                 self.user_interface_event = self.modification_menu.check_buttons(event)
                 self.modification_menu.render(display)
+            elif state == State.GAMEPLAY:
+
+                self.gameplay_interface.update(score, life)
+                self.user_interface_event = self.gameplay_interface.check_buttons(event)
+                self.gameplay_interface.render(display)
 
     def get_event(self):
         '''
@@ -97,7 +104,7 @@ class UserInterface():
         self.texts = {}
         self.buttons = {}
         self.bars = {}
-        self.surface = pygame.Surface(size)
+        self.surface = pygame.Surface(size, pygame.SRCALPHA)
         self.background = None
         self.background_color = pygame.color.Color(background_color)
 
@@ -284,7 +291,7 @@ class Text():
         if self.has_shadow:
 
             self.shadow_text = self.font.render(text, False, self.shadow_color)
-            self.merged_surface.blit(self.shadow_text, (-10, 0))
+            self.merged_surface.blit(self.shadow_text, (self.size // 8, 0))
 
         self.merged_surface.blit(self.text, (0, 0))
 
@@ -325,12 +332,17 @@ class Bar():
     '''
 
     position: tuple  # Posição
+    internal_bar_position: tuple
+    size: tuple
+    internal_bar_size: tuple
     sprites: pygame.sprite.RenderPlain  # Sprites
 
     def __init__(self, alignment, position, size, border_color, color, screen_size):
 
         self.position = None
+        self.internal_bar_position = None
         self.size = size
+        self.internal_bar_size = (size[0] - 10, size[1] - 10)
         self.sprites = pygame.sprite.RenderPlain()
 
         self.position = UserInterfaceUtillities.calculate_position(alignment,
@@ -338,17 +350,24 @@ class Bar():
                                                                    size,
                                                                    screen_size)
 
-        self.sprites.add(graphics.RectangleSprite((self.position[0] - 5, self.position[1] - 5),
-                                                  (self.size[0] - 5, self.size[1] - 5),
+        self.internal_bar_position = (self.position[0] + 5,
+                                      self.position[1] + 5)
+
+        self.sprites.add(graphics.RectangleSprite(self.position,
+                                                  self.size,
                                                   border_color))
-        self.sprites.add(graphics.RectangleSprite(self.position, self.size, color))
+        self.sprites.add(graphics.RectangleSprite(self.internal_bar_position,
+                                                  self.internal_bar_size,
+                                                  color))
 
     def update(self, value):
         '''
         Atualiza o tamanho da barra com base em um valor de 0 a 100 (percentual).
         '''
 
-        self.sprites.sprites()[1].update(self.position, [int((self.size[0] / 100.0) * value), 35])
+        self.sprites.sprites()[1].update(self.internal_bar_position,
+                                         (int((self.internal_bar_size[0] / 100.0) * value),
+                                          self.internal_bar_size[1]))
 
     def render(self, surface):
         '''
@@ -784,17 +803,87 @@ class ModificationMenu(UserInterface):
                                   screen_size,
                                   False)
 
-    def update(self, points, velocity, damage, firerate, armor):
+    def update(self, modification_data):
         '''
         Atualiza os dados dos componentes da interface.
         '''
 
-        self.texts["Point Number"].update(str(points))
-        self.texts["Velocity Number"].update(str(velocity))
-        self.bars["Velocity"].update(velocity)
-        self.texts["Damage Number"].update(str(damage))
-        self.bars["Damage"].update(damage)
-        self.texts["Firerate Number"].update(str(firerate))
-        self.bars["Firerate"].update(firerate)
-        self.texts["Armor Number"].update(str(armor))
-        self.bars["Armor"].update(armor)
+        self.texts["Point Number"].update(str(modification_data["Modification Points"]))
+        self.texts["Velocity Number"].update(str(modification_data["Velocity"]))
+        self.bars["Velocity"].update(modification_data["Velocity"])
+        self.texts["Damage Number"].update(str(modification_data["Damage"]))
+        self.bars["Damage"].update(modification_data["Damage"])
+        self.texts["Firerate Number"].update(str(modification_data["Firerate"]))
+        self.bars["Firerate"].update(modification_data["Firerate"])
+        self.texts["Armor Number"].update(str(modification_data["Armor"]))
+        self.bars["Armor"].update(modification_data["Armor"])
+
+
+class GameplayInterface(UserInterface):
+
+    '''
+    Interface do gameplay.
+    '''
+
+    def __init__(self, screen_size, background_color):
+
+        super().__init__((0, 0), screen_size, screen_size, background_color)
+
+        self.bars["Life"] = Bar(Alignment.BOTTOM_LEFT,
+                                (25, 25),
+                                (400, 50),
+                                (40, 0, 0),
+                                (100, 0, 0),
+                                screen_size)
+
+        self.texts["Life"] = Text("XXX",
+                                  Alignment.BOTTOM_LEFT,
+                                  (185, 35),
+                                  30,
+                                  (230, 230, 230),
+                                  screen_size,
+                                  False)
+
+        self.texts["Score"] = Text("SCORE: ",
+                                    Alignment.BOTTOM_LEFT,
+                                    (25, 80),
+                                    30,
+                                    (230, 230, 230),
+                                    screen_size,
+                                    True,
+                                    (130, 130, 130))
+
+        self.texts["Score Number"] = Text("XXXXXXX",
+                                          Alignment.BOTTOM_LEFT,
+                                          (175, 80),
+                                          30,
+                                          (230, 230, 230),
+                                          screen_size,
+                                          True,
+                                          (130, 130, 130))
+
+        self.buttons["Pause"] = Button(Alignment.BOTTOM_RIGHT,
+                                       (125, 25),
+                                       (100, 100),
+                                       Event.UI_PAUSE,
+                                       pygame.K_ESCAPE,
+                                       screen_size,
+                                       (108, 155, 179),
+                                       (138, 200, 230))
+
+        self.texts["Pause"] = Text("II",
+                                    Alignment.BOTTOM_RIGHT,
+                                    (116, 50),
+                                    50,
+                                    (230, 230, 230),
+                                    screen_size,
+                                    False)
+
+    def update(self, score, life):
+        '''
+        Atualiza a interface de gameplay
+        '''
+
+        self.texts["Score Number"].update(f"{score:07}")
+        self.bars["Life"].update(life)
+        self.texts["Life"].update(str(life))

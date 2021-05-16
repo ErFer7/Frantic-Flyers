@@ -34,7 +34,6 @@ class GameManager():
     events: list
     file_system: FileSystem
     data: dict
-    gameplay: None
     entities: EntityManager
     physics: PhysicsManager
     graphics: GraphicsManager
@@ -65,14 +64,15 @@ class GameManager():
                      "Velocity": 25,
                      "Damage": 25,
                      "Firerate": 25,
-                     "Armor": 25,
-                     "Maximum Score": 0}
+                     "Armor": 25}
 
         if len(self.file_system.get_data()) > 0:
 
             self.data = self.file_system.get_data()
+        else:
 
-        self.gameplay = GameplayManager()
+            self.file_system.set_data(self.data)
+
         self.entities = EntityManager()
         self.physics = PhysicsManager()
         self.graphics = GraphicsManager()
@@ -88,18 +88,15 @@ class GameManager():
         while self.state != State.EXIT:
 
             # Atualiza cada sistema
-            self.gameplay.update()
             self.entities.update_entities() # Mudar para update
             self.physics.update()
             self.graphics.update()
             self.user_interface.update(self.state,
                                        self.display,
                                        pygame.event.get(),
-                                       self.data["Modification Points"],
-                                       self.data["Velocity"],
-                                       self.data["Damage"],
-                                       self.data["Firerate"],
-                                       self.data["Armor"])
+                                       self.data,
+                                       self.entities.get_player_score(),
+                                       self.entities.get_player_life())
 
             # Obtém os eventos do jogo
             self.events.append(self.user_interface.get_event())
@@ -193,15 +190,3 @@ class GameManager():
                 self.data["Modification Points"] += 1
         
         self.file_system.write_file()
-
-
-class GameplayManager():
-
-    '''
-    Classe que gerencia o gameplay.
-    '''
-
-    def update(self):
-        '''
-        Atualiza o gameplay.
-        '''

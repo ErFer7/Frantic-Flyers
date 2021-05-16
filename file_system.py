@@ -41,36 +41,13 @@ class FileSystem():
             data_json = json.dumps(self.data, indent=4)  # indent é usada para formatar o json
             file.write(data_json)
 
-    def set_element(self, element_id: str, element_data: list):
+    def set_data(self, data: dict):
         '''
-        Insere ou edita dados.
-        Essencialmente define um elemento.
+        Insere dados
         '''
 
-        self.data[element_id] = element_data
+        self.data = data
         self.write_file()
-
-    def remove_element(self, element_id: str):
-        '''
-        Remove dados.
-        '''
-
-        del self.data[element_id]
-        self.write_file()
-
-    def get_matrix_data(self):
-        '''
-        Retorna uma matriz de dados.
-        '''
-
-        matrix = []
-
-        for k in self.data.keys():
-
-            element = [k] + self.data[k]
-            matrix.append(element)
-
-        return matrix
 
     def get_data(self):
         '''

@@ -29,3 +29,9 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 
 * Interface e sistema de modificação do jogador adicionados.
 * Definições do sistema de entidades.
+
+## 0.5 - 15/05/2021
+
+* Interface de gameplay adicionada.
+* Gameplay manager removido.
+* Modificações no sistema de entidades.
