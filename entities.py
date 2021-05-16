@@ -4,6 +4,8 @@
 Módulo para as entidades.
 '''
 
+import os
+
 import pygame
 
 class EntityManager():
@@ -24,7 +26,7 @@ class EntityManager():
 
         self.player_life = 0 # Depois vamos pegar a vida do jogador de um jeito melhor
         self.player_score = 0
-        #self.player = Player(posição, vida, velocidade, dano, bala, freq-bala, estado, tiro-som, dano-som)
+        self.player = Player((0, 0), 100, 1.0, 1.0, 0, 1.0, '', '', '')
         self.enemies = []
         self.bullets = []
         self.inactive_enemies = []
@@ -87,19 +89,45 @@ class Aircraft(Entity):
     Super Classe
     '''
 
-    def __init__(self, position, life, speed, damage, bullet_type, bullet_frequency, state, attack_sound, damage_sound):
+    life: int
+    max_life: int
+    speed: float
+    damage: float
+    bullet_type: int # Pode ser um enum também
+    firerate: float
+    sprites: pygame.sprite.RenderPlain
+    attack_sound: pygame.mixer.Sound
+    damage_sound: pygame.mixer.Sound
+    idle_sound: pygame.mixer.Sound
+
+    def __init__(self,
+                 position,
+                 max_life,
+                 speed,
+                 damage,
+                 bullet_type,
+                 firerate,
+                 attack_sound,
+                 damage_sound,
+                 idle_sound):
 
         super().__init__(position)
 
-        self.life = life
+        self.life = max_life # Todas as entidades são instanciadas com a vida cheia
+        self.max_life = max_life
         self.speed = speed
         self.damage = damage
-        self.bullet_type = bullet_type  # integer que diz como o tiro sai do avião, vai de 0 até um número
-        self.bullet_frequency = bullet_frequency  # cadencia de tiros
-        #self.state = EntityState()
-        #self.sprites = pygame.sprite.RenderPlain()
+        # integer que diz como o tiro sai do avião, vai de 0 até um número
+        self.bullet_type = bullet_type
+        self.firerate = firerate  # cadencia de tiros
+        self.sprites = pygame.sprite.RenderPlain()
         # self.attack_sound = pygame.mixer.Sound() --som do tiro
         # self.damage_sound = pygame.mixer.Sound() --som quando a nave leva dano
+
+    def behaviour(self):
+        '''
+        Comportamento da aeronave.
+        '''
 
 
 class Player(Aircraft):
@@ -108,11 +136,28 @@ class Player(Aircraft):
     Jogador
     '''
 
-    def __init__(self, position, life, speed, damage, bullet_type, bullet_frequency, state, attack_sound, damage_sound):
-        Aircraft.__init__(self, position, life, speed, damage,
-                          bullet_type, bullet_frequency, state, attack_sound, damage_sound)
-        self.max_life = 100
+    def __init__(self,
+                 position,
+                 max_life,
+                 speed,
+                 damage,
+                 bullet_type,
+                 firerate, 
+                 attack_sound,
+                 damage_sound,
+                 idle_sound):
 
+        super().__init__(position,
+                         max_life,
+                         speed,
+                         damage,
+                         bullet_type,
+                         firerate,
+                         attack_sound,
+                         damage_sound,
+                         idle_sound)
+
+        # Demais definições aqui
 
 class Enemy(Aircraft):
 
@@ -120,9 +165,28 @@ class Enemy(Aircraft):
     Inimigos
     '''
 
-    def __init__(self, position, life, speed, damage, bullet_type, bullet_frequency, state, attack_sound, damage_sound):
-        Aircraft.__init__(self, position, life, speed, damage,
-                          bullet_type, bullet_frequency, state, attack_sound, damage_sound)
+    def __init__(self,
+                 position,
+                 max_life,
+                 speed,
+                 damage,
+                 bullet_type,
+                 firerate,
+                 attack_sound,
+                 damage_sound,
+                 idle_sound):
+
+        super().__init__(position,
+                         max_life,
+                         speed,
+                         damage,
+                         bullet_type,
+                         firerate,
+                         attack_sound,
+                         damage_sound,
+                         idle_sound)
+
+        # Demais definições aqui
 
 class Bullet(Entity):
 
