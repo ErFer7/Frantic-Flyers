@@ -75,12 +75,12 @@ class GameManager():
 
         screen_size = (self.display.get_width(), self.display.get_height())
 
-        self.entities = EntityManager(screen_size)
-        self.physics = PhysicsManager(-1.0)
+        self.entities = EntityManager(screen_size, 100)
+        self.physics = PhysicsManager()
         self.graphics = GraphicsManager((92, 184, 230))
         self.user_interface = UserInterfaceManager(screen_size, version)
 
-    def run_game(self, fps):
+    def run_game(self, tick):
         '''
         Roda o jogo.
         '''
@@ -90,9 +90,9 @@ class GameManager():
             events = pygame.event.get()
 
             # Atualiza cada sistema
-            self.entities.update(events)
-            self.physics.update(self.state, fps, self.entities.get_entities())
-            self.graphics.update(self.state, self.display, self.entities.get_entities())
+            self.entities.update(events, tick)
+            self.physics.update(self.state, tick, self.entities.get_entities(True))
+            self.graphics.update(self.state, self.display, self.entities.get_entities(False))
             self.user_interface.update(self.state,
                                        self.display,
                                        events,
@@ -181,7 +181,7 @@ class GameManager():
             self.events.clear()
 
             pygame.display.update()
-            self.clock.tick(fps)
+            self.clock.tick(tick)
 
         pygame.quit()
         sys.exit()

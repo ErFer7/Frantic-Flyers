@@ -10,11 +10,10 @@ Para fazer:
 
 * Sistema de entidades
     * Gerenciador
-    * Entidades
-    * Jogador
     * Inimigos
-* Sistema de física
-    * Colisões
+* Sistema gráfico
+    * Animações
+* Som e música
 * Polir o jogo e consertar tudo
     * Testar performance
     * Testar memória
@@ -22,7 +21,7 @@ Para fazer:
 
 from game_system import GameManager
 
-VERSION = "v0.8.1"
+VERSION = "v0.9"
 
 game_manager = GameManager(VERSION)
 game_manager.run_game(60)

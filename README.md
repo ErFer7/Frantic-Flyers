@@ -66,3 +66,9 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 ## 0.8.1 - 16/05/2021
 
 * Modificações nas entidades.
+
+## 0.9 - 17/05/2021
+
+* Sistema de colisões completo.
+* Sistema de tiros completo.
+* Jogador concluído.

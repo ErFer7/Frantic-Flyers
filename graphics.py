@@ -36,6 +36,15 @@ class GraphicsManager():
                 self.render_group.add(entity.get_sprite())
 
             self.render_group.draw(display)
+
+            # DEBUG
+            for entity in entities:
+
+                if entity.get_hitbox() is not None:
+
+                    for rect in entity.get_hitbox():
+
+                        pygame.draw.rect(display, (255, 0, 0), rect, 1)
             self.render_group.empty()
 
 
@@ -45,7 +54,7 @@ class CustomSprite(pygame.sprite.Sprite):
     Define um sprite retangular
     '''
 
-    def __init__(self, position, size, image_path=None, color=None):
+    def __init__(self, position, size, image_path=None, color=None, angle=0.0):
 
         super().__init__()
 
@@ -55,9 +64,11 @@ class CustomSprite(pygame.sprite.Sprite):
 
             self.image = pygame.transform.scale(pygame.image.load(image_path).convert_alpha(),
                                                 size)
+            self.image = pygame.transform.rotate(self.image, angle)
         else:
 
             self.image = pygame.Surface(size)
+
         self.rect = self.image.get_rect()
         self.rect.x = position[0]
         self.rect.y = position[1]
@@ -75,5 +86,5 @@ class CustomSprite(pygame.sprite.Sprite):
 
             self.image = pygame.transform.scale(self.image, size)
 
-        self.rect.x = position[0]
-        self.rect.y = position[1]
+        self.rect.x = int(position[0])
+        self.rect.y = int(position[1])
