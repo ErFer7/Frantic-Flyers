@@ -8,6 +8,7 @@ import pygame
 
 from states import State
 
+
 class GraphicsManager():
 
     '''
@@ -65,7 +66,7 @@ class CustomSprite(pygame.sprite.Sprite):
 
             self.image.fill(color)
 
-    def update(self, position, size = None):
+    def update(self, position, size=None):
         '''
         Redefine o tamanho do sprite
         '''

@@ -149,6 +149,7 @@ class GameManager():
                         # Tocar o áudio do botão aqui
                     elif event == Event.UI_PLAY:
 
+                        self.entities.update_player_modifiers(self.data)
                         self.state = State.GAMEPLAY
                         # Tocar o áudio do botão aqui
                     elif event == Event.UI_EXIT:

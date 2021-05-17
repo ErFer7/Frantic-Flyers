@@ -393,9 +393,14 @@ class Bar():
         Atualiza o tamanho da barra com base em um valor de 0 a 100 (percentual).
         '''
 
+        new_value = int((self.internal_bar_size[0] / 100.0) * value)
+
+        if new_value == 0:
+
+            new_value = 1
+
         self.sprites.sprites()[1].update(self.internal_bar_position,
-                                         (int((self.internal_bar_size[0] / 100.0) * value),
-                                          self.internal_bar_size[1]))
+                                         (new_value, self.internal_bar_size[1]))
 
     def render(self, surface):
         '''

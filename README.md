@@ -62,3 +62,7 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 * Jogador adicionado.
 * Cenário adicionado.
 * Otimização dos gráficos que permite mais sprites.
+
+## 0.8.1 - 16/05/2021
+
+* Modificações nas entidades.
