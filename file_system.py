@@ -30,13 +30,20 @@ class FileSystem():
                 data_json = file.read()
 
             self.data = json.loads(data_json)
+        else:
+
+            directory = os.path.dirname(path)
+
+            if not os.path.exists(path):
+
+                os.makedirs(directory)
 
     def write_file(self):
         '''
         Salva os dados no arquivo.
         '''
 
-        with open(self.path, 'w+') as file:
+        with open(self.path, 'w') as file:
 
             data_json = json.dumps(self.data, indent=4)  # indent é usada para formatar o json
             file.write(data_json)
