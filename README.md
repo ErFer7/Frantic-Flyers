@@ -72,3 +72,10 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 * Sistema de colisões completo.
 * Sistema de tiros completo.
 * Jogador concluído.
+
+## 0.10 - 18/05/2021
+
+* Comportamento dos inimigos definido.
+* Correções na interface.
+* Correções na física.
+* Modificações no sistema de entidades.

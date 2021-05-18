@@ -9,19 +9,18 @@ Projeto: Frantic Flyers.
 Para fazer:
 
 * Sistema de entidades
-    * Gerenciador
-    * Inimigos
+    * Todos os tipos de bala
+    * Fábrica de inimigos
+    * Pontos de modificação calculados
 * Sistema gráfico
     * Animações
 * Som e música
 * Polir o jogo e consertar tudo
-    * Testar performance
-    * Testar memória
 '''
 
 from game_system import GameManager
 
-VERSION = "v0.9"
+VERSION = "v0.10"
 
 game_manager = GameManager(VERSION)
 game_manager.run_game(60)

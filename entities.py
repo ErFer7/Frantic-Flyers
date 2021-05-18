@@ -8,12 +8,14 @@ import os
 
 from random import randint
 from enum import Enum
+from math import sqrt
 
 import pygame
+from pygame.sprite import RenderUpdates
 
 from graphics import CustomSprite
 from physics import Hitbox
-
+from states import Event
 
 class EntityManager():
 
@@ -21,19 +23,22 @@ class EntityManager():
     Gerencia as entidades
     '''
 
-    player_score: int
+    score: int
     screen_size: tuple
     player: None
     enemies: list
     bullets: list
     clouds: list
-    inactive_enemies: list  # Usado no pooling
     inactive_bullets: list  # Usado no pooling
     inactive_bullets_limit: int
+    enemies_limit: int
+    enemy_factory: None
+    elapsed_time: float
+    event: Event
 
-    def __init__(self, screen_size, inactive_bullets_limit):
+    def __init__(self, screen_size, inactive_bullets_limit, enemies_limit):
 
-        self.player_score = 0
+        self.score = 0
         self.screen_size = screen_size
 
         player_hitbox = Hitbox((self.screen_size[0] / 2, self.screen_size[1] / 2),
@@ -48,7 +53,7 @@ class EntityManager():
                              BulletType.SIMPLE,
                              1.0,
                              1.0,
-                             1.0,
+                             0.25,
                              '',  # Som
                              '',  # Som
                              '',  # Som
@@ -61,32 +66,12 @@ class EntityManager():
         self.enemies = []
         self.bullets = []
         self.clouds = []
-        self.inactive_enemies = []
         self.inactive_bullets = []
         self.inactive_bullets_limit = inactive_bullets_limit
-
-        # TESTES
-        enemy_hitbox = Hitbox((self.screen_size[0] / 2, self.screen_size[1] / 2 - 200),
-                              (0, 12, 35, 120),
-                              (0, -5, 125, 35))
-
-        self.enemies.append(Enemy((self.screen_size[0] / 2, self.screen_size[1] / 2 - 200),
-                            -1.0,
-                            100,
-                            100.0,
-                            10.0,
-                            BulletType.SIMPLE,
-                            1.0,
-                            1.0,
-                            1.0,
-                            '',  # Som
-                                  '',  # Som
-                                  '',  # Som
-                                  (300, 300),
-                                  os.path.join("Sprites", "Planes", "GER_bf109.png"),
-                                  180.0,
-                                  enemy_hitbox,
-                                  ((-10, 0), (0, 0), (10, 0))))
+        self.enemies_limit = enemies_limit
+        self.enemy_factory = EnemyFactory(self.screen_size, 300.0)
+        self.elapsed_time = 1.0
+        self.event = None
 
         self.generate_clouds(10)
 
@@ -104,12 +89,12 @@ class EntityManager():
 
         return self.player.get_life()
 
-    def get_player_score(self):
+    def get_score(self):
         '''
         Retorna a pontuação do jogador.
         '''
 
-        return self.player_score
+        return self.score
 
     def get_entities(self, filter_dict):
         '''
@@ -133,15 +118,15 @@ class EntityManager():
 
         for _ in range(cloud_count):
 
-            random_position = (randint(0, self.screen_size[0]),
-                               randint(-self.screen_size[1], self.screen_size[1]))
-            random_cloud_index = randint(0, 4)
-            path = os.path.join("Sprites", "Scenery", f"Cloud {random_cloud_index}.png")
+            position = (randint(0, self.screen_size[0]),
+                        randint(-self.screen_size[1], self.screen_size[1]))
+            cloud_index = randint(0, 4)
+            path = os.path.join("Sprites", "Scenery", f"Cloud {cloud_index}.png")
             image = pygame.image.load(path)
             size = (image.get_width() * 3, image.get_height() * 3)
             speed = (256.0 / image.get_width()) * 50.0
 
-            self.clouds.append(Cloud(random_position,
+            self.clouds.append(Cloud(position,
                                      size,
                                      path,
                                      0,
@@ -187,7 +172,19 @@ class EntityManager():
         Gera os inimigos.
         '''
 
-        # Podemos aproveitar pra usar um padrão de fábrica aqui
+        enemy_count = 1 + int(self.elapsed_time / 20)
+
+        if enemy_count > self.enemies_limit:
+
+            enemy_count = self.enemies_limit
+
+        while enemy_count - len(self.enemies) > 0:
+
+            enemy = self.enemy_factory.generate_enemy(self.elapsed_time)
+
+            if enemy is not None:
+
+                self.enemies.append(enemy)
 
     def update(self, events, tick):
         '''
@@ -205,6 +202,10 @@ class EntityManager():
                                self.player.get_damage(self.player.get_damage_modifier()))
             self.player.set_fire_state(False)
 
+        if not self.player.is_active():
+
+            self.event = Event.GP_GAMEOVER
+
         for cloud in self.clouds:
 
             cloud.behaviour(self.screen_size)
@@ -220,7 +221,7 @@ class EntityManager():
 
         for enemy in self.enemies:
 
-            enemy.behaviour(tick)
+            enemy.behaviour(tick, self.screen_size, self.player.get_position(), self.enemies)
 
             if enemy.is_attacking() and enemy.is_ready():
 
@@ -231,16 +232,144 @@ class EntityManager():
                                    enemy.get_damage())
                 enemy.set_fire_state(False)
 
+            if not enemy.is_active():
+
+                if enemy.is_destroyed():
+
+                    self.score += enemy.get_score_value()
+                    self.player.change_life(10)
+
+                self.enemies.remove(enemy)
+
+        self.enemy_generator()
+        self.elapsed_time += (1 / tick)
+
         while len(self.inactive_bullets) > self.inactive_bullets_limit:
 
             self.inactive_bullets.remove(self.inactive_bullets[0])
+
+    def get_event(self):
+        '''
+        Retorna os eventos.
+        '''
+
+        return self.event
 
 
 class EnemyFactory():
 
     '''
-    Fábrica de inimigos. Auxilia na criação dos inimigos.
+    Fábrica de inimigos. Auxilia na criação dos inimigos. A dificuldade total é o tempo que demora
+    para ser permitida a geração dos inimigos mais difíceis.
     '''
+
+    screen_size: tuple
+    max_difficulty: float
+
+    def __init__(self, scree_size, max_difficulty):
+
+        self.screen_size = scree_size
+        self.max_difficulty = max_difficulty
+
+    def generate_enemy(self, difficulty):
+        '''
+        Gera um inimigo e o retorna.
+        '''
+
+        enemy = None
+
+        position = (randint(150, self.screen_size[0] - 150),
+                    randint(-self.screen_size[1], -150))
+
+        drag = -1.0
+        stun_time = 0.25
+        size = (300, 300)
+        angle = 180
+
+        if difficulty > self.max_difficulty:
+
+            difficulty = self.max_difficulty
+
+        difficulty_range = randint(0, int(100.0 * difficulty / self.max_difficulty))
+
+        if difficulty_range <= 10:
+
+            random_number = randint(0, 3)
+
+            if random_number == 0:
+
+                hitbox = Hitbox(position,
+                                (0, -12, 35, 120),
+                                (0, 5, 125, 35))
+
+                enemy = Enemy(position,
+                              drag,
+                              80,
+                              100.0,
+                              10.0,
+                              BulletType.SIMPLE,
+                              1.0,
+                              1.0,
+                              stun_time,
+                              '',  # Som
+                              '',  # Som
+                              '',  # Som
+                              size,
+                              os.path.join("Sprites", "Planes", "GER_bf109.png"),
+                              angle,
+                              hitbox,
+                              ((10, 0), (0, 0), (-10, 0)),
+                              100)
+            elif random_number == 1:
+
+                hitbox = Hitbox(position,
+                                (0, -12, 35, 120),
+                                (0, 5, 125, 35))
+
+                enemy = Enemy(position,
+                              drag,
+                              80,
+                              100.0,
+                              10.0,
+                              BulletType.SIMPLE,
+                              1.0,
+                              1.0,
+                              stun_time,
+                              '',  # Som
+                              '',  # Som
+                              '',  # Som
+                              size,
+                              os.path.join("Sprites", "Planes", "JAP_a6m.png"),
+                              angle,
+                              hitbox,
+                              ((10, 0), (0, 0), (-10, 0)),
+                              100)
+            else:
+
+                hitbox = Hitbox(position,
+                                (0, -12, 35, 120),
+                                (0, 5, 125, 35))
+
+                enemy = Enemy(position,
+                              drag,
+                              80,
+                              100.0,
+                              10.0,
+                              BulletType.SIMPLE,
+                              1.0,
+                              1.0,
+                              stun_time,
+                              '',  # Som
+                              '',  # Som
+                              '',  # Som
+                              size,
+                              os.path.join("Sprites", "Planes", "US_p40.png"),
+                              angle,
+                              hitbox,
+                              ((10, 0), (0, 0), (-10, 0)),
+                              100)
+
+        return enemy
 
 
 class BulletType(Enum):
@@ -349,6 +478,13 @@ class Entity():
 
             return None
 
+    def deactivate(self):
+        '''
+        Desativa a entidade.
+        '''
+
+        self.active = False
+
     def is_active(self):
         '''
         Retorna verdadeiro caso a entidade esteja ativa.
@@ -377,6 +513,7 @@ class Aircraft(Entity):
     stun_cooldown: float
     stunned: bool
     attacking: bool
+    destroyed: bool
     gun_points: list
     attack_sound: pygame.mixer.Sound
     damage_sound: pygame.mixer.Sound
@@ -418,6 +555,7 @@ class Aircraft(Entity):
         self.stun_cooldown = 0.0
         self.stunned = False
         self.attacking = False
+        self.destroyed = False
         self.gun_points = list(gun_points)
         # self.attack_sound = pygame.mixer.Sound() --som do tiro
         # self.damage_sound = pygame.mixer.Sound() --som quando a nave leva dano
@@ -445,6 +583,7 @@ class Aircraft(Entity):
 
             self.life = 0
             self.active = False
+            self.destroyed = True
 
     def stun_behaviour(self, tick):
         '''
@@ -478,7 +617,7 @@ class Aircraft(Entity):
         Obtém o dano da aeronave.
         '''
 
-        return self.damage + damage_modifier / 4
+        return -(self.damage + damage_modifier / 4)
 
     def is_attacking(self):
         '''
@@ -514,6 +653,13 @@ class Aircraft(Entity):
         '''
 
         return self.bullet_type
+
+    def is_destroyed(self):
+        '''
+        Retorna verdadeiro se a aeronave foi destruída.
+        '''
+
+        return self.destroyed
 
 
 class Player(Aircraft):
@@ -676,6 +822,8 @@ class Enemy(Aircraft):
     Inimigos.
     '''
 
+    score_value: int
+
     def __init__(self,
                  position,
                  drag,
@@ -693,7 +841,8 @@ class Enemy(Aircraft):
                  sprite_path,
                  angle,
                  hitbox,
-                 gun_points):
+                 gun_points,
+                 score_value):
 
         super().__init__(position,
                          drag,
@@ -713,15 +862,81 @@ class Enemy(Aircraft):
                          hitbox,
                          gun_points)
 
-        # Demais definições aqui
+        self.score_value = score_value
 
-    def behaviour(self, tick):
+    def behaviour(self, tick, screen_size, player_position, enemies):
         '''
         Definição do comportamento do inimigo.
         '''
 
         self.stun_behaviour(tick)
         self.firerate_behaviour(tick)
+
+        self.velocity[1] = self.speed
+
+        chase_player = True
+
+        minimum_x_distance = self.size[0] - 100
+        minimum_y_distance = self.size[1] - 100
+
+        for enemy in enemies:
+
+            if enemy != self:
+
+                distance = sqrt((enemy.get_position()[0] - self.position[0])**2 + \
+                                (enemy.get_position()[1] - self.position[1])**2)
+
+                if distance < minimum_x_distance:
+
+                    if enemy.get_position()[0] < self.position[0]: # O outro inimgo está a esquerda
+
+                        self.velocity[0] = self.speed
+                    else:
+
+                        self.velocity[0] = -self.speed
+
+                    chase_player = False
+                # Evita que o inimigo procure o jogador logo depois de se afastar de outro inimigo
+                elif distance < minimum_x_distance + 100:
+
+                    chase_player = False
+
+        if chase_player:
+
+            if (player_position[0] - self.position[0]) < - 100:
+
+                self.velocity[0] = -self.speed
+                self.attacking = False
+            elif (player_position[0] - self.position[0]) > 100:
+
+                self.velocity[0] = self.speed
+                self.attacking = False
+            else:
+
+                self.attacking = True
+
+            if (player_position[1] - self.position[1]) < minimum_y_distance and \
+               (player_position[1] - self.position[1]) > -minimum_y_distance:
+
+                if (player_position[0] - self.position[0]) < 0:
+
+                    self.velocity[0] = self.speed
+                else:
+
+                    self.velocity[0] = -self.speed
+
+        if self.position[0] <= 0 - self.size[0] or              \
+           self.position[0] >= screen_size[0] + self.size[0] or \
+           self.position[1] >= screen_size[1] + self.size[1]:
+
+            self.active = False
+
+    def get_score_value(self):
+        '''
+        Retorna a pontuação obtida ao destruir o inimigo.
+        '''
+
+        return self.score_value
 
 
 class Bullet(Entity):

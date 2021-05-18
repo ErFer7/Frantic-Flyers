@@ -78,6 +78,8 @@ class UserInterfaceManager():
             self.pause_interface.render(display)
         elif state == State.GAMEOVER:
 
+            self.gameover_interface.update(score, modification_data["Modification Points"])
+
             for event in events:
 
                 self.user_interface_event = self.gameover_interface.check_buttons(event)
@@ -1083,3 +1085,11 @@ class GameoverInterface(UserInterface):
                                   (230, 230, 230),
                                   screen_size,
                                   False)
+
+    def update(self, score, points):
+        '''
+        Atualiza a interface de gameplay.
+        '''
+
+        self.texts["Score Number"].update(f"{score:07}")
+        self.texts["Point Number"].update(str(points))

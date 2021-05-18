@@ -75,7 +75,7 @@ class GameManager():
 
         screen_size = (self.display.get_width(), self.display.get_height())
 
-        self.entities = EntityManager(screen_size, 100)
+        self.entities = EntityManager(screen_size, 100, 25)
         self.physics = PhysicsManager()
         self.graphics = GraphicsManager((92, 184, 230))
         self.user_interface = UserInterfaceManager(screen_size, version)
@@ -97,10 +97,11 @@ class GameManager():
                                        self.display,
                                        events,
                                        self.data,
-                                       self.entities.get_player_score(),
+                                       self.entities.get_score(),
                                        self.entities.get_player_life())
 
             # Obtém os eventos do jogo
+            self.events.append(self.entities.get_event())
             self.events.append(self.user_interface.get_event())
 
             for event in self.events:

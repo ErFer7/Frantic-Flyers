@@ -77,6 +77,7 @@ class PhysicsManager():
                             if rect.collidepoint(bullet.get_position()):
 
                                 enemy.change_life(bullet.get_damage())
+                                bullet.deactivate()
                 else: # Bala x jogador
 
                     for rect in player.get_hitbox():
@@ -84,6 +85,7 @@ class PhysicsManager():
                         if rect.collidepoint(bullet.get_position()):
 
                             player.change_life(bullet.get_damage(), player.get_armor_modifier())
+                            bullet.deactivate()
 
 class Hitbox():
 
