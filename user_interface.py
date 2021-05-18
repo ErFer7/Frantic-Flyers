@@ -294,7 +294,7 @@ class Text():
 
         self.merged_surface = pygame.Surface((self.text.get_rect().width,
                                               self.text.get_rect().height),
-                                              pygame.SRCALPHA)
+                                             pygame.SRCALPHA)
 
         if self.has_shadow:
 
@@ -897,7 +897,6 @@ class ModificationMenu(UserInterface):
                                               (230, 230, 230),
                                               screen_size,
                                               False)
-
 
     def update(self, modification_data):
         '''

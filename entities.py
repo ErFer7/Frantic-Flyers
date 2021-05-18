@@ -16,6 +16,7 @@ from graphics import CustomSprite
 from physics import Hitbox
 from states import Event, State
 
+
 class EntityManager():
 
     '''
@@ -431,10 +432,10 @@ class EntityManager():
             if self.player.is_attacking() and self.player.is_ready():
 
                 self.generate_shot(self.player.get_position(),
-                                self.player.get_gun_points(),
-                                self.player.get_bullet_type(),
-                                True,
-                                self.player.get_damage(self.player.get_damage_modifier()))
+                                   self.player.get_gun_points(),
+                                   self.player.get_bullet_type(),
+                                   True,
+                                   self.player.get_damage(self.player.get_damage_modifier()))
 
                 self.player.set_fire_state(False)
 
@@ -1257,6 +1258,7 @@ class Player(Aircraft):
         self.position = list(position)
         self.direction = [0, 0]
 
+
 class Enemy(Aircraft):
 
     '''
@@ -1322,12 +1324,12 @@ class Enemy(Aircraft):
 
             if enemy != self:
 
-                distance = sqrt((enemy.get_position()[0] - self.position[0])**2 + \
+                distance = sqrt((enemy.get_position()[0] - self.position[0])**2 +
                                 (enemy.get_position()[1] - self.position[1])**2)
 
                 if distance < minimum_x_distance:
 
-                    if enemy.get_position()[0] < self.position[0]: # O outro inimgo está a esquerda
+                    if enemy.get_position()[0] < self.position[0]:  # O outro inimgo está a esquerda
 
                         self.velocity[0] = self.speed
                     else:

@@ -68,7 +68,7 @@ class PhysicsManager():
 
             for bullet in bullets:
 
-                if bullet.is_friendly(): # Bala x inimigo
+                if bullet.is_friendly():  # Bala x inimigo
 
                     for enemy in enemies:
 
@@ -78,7 +78,7 @@ class PhysicsManager():
 
                                 enemy.change_life(bullet.get_damage())
                                 bullet.deactivate()
-                else: # Bala x jogador
+                else:  # Bala x jogador
 
                     for rect in player.get_hitbox():
 
@@ -86,6 +86,7 @@ class PhysicsManager():
 
                             player.change_life(bullet.get_damage(), player.get_armor_modifier())
                             bullet.deactivate()
+
 
 class Hitbox():
 
