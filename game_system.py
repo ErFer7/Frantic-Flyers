@@ -90,7 +90,7 @@ class GameManager():
             events = pygame.event.get()
 
             # Atualiza cada sistema
-            self.entities.update(events, tick)
+            self.entities.update(self.state, events, tick)
             self.physics.update(self.state, tick, self.entities.get_entities(True))
             self.graphics.update(self.state, self.display, self.entities.get_entities(False))
             self.user_interface.update(self.state,

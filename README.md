@@ -83,3 +83,7 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 ## 0.10.1 - 18/05/2021
 
 * Correção de erro no sistema de arquivos.
+
+## 0.10.2 - 18/05/2021
+
+* Correção de erro que gerava um loop infinito ao perder o jogo.

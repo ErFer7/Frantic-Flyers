@@ -11,11 +11,10 @@ from enum import Enum
 from math import sqrt
 
 import pygame
-from pygame.sprite import RenderUpdates
 
 from graphics import CustomSprite
 from physics import Hitbox
-from states import Event
+from states import Event, State
 
 class EntityManager():
 
@@ -186,67 +185,71 @@ class EntityManager():
 
                 self.enemies.append(enemy)
 
-    def update(self, events, tick):
+    def update(self, state, events, tick):
         '''
         Atualiza as entidades e seus comportamentos.
         '''
 
-        self.player.behaviour(events, self.screen_size, tick)
+        self.event = None
 
-        if self.player.is_attacking() and self.player.is_ready():
+        if state == State.GAMEPLAY:
 
-            self.generate_shot(self.player.get_position(),
-                               self.player.get_gun_points(),
-                               self.player.get_bullet_type(),
-                               True,
-                               self.player.get_damage(self.player.get_damage_modifier()))
-            self.player.set_fire_state(False)
+            self.player.behaviour(events, self.screen_size, tick)
 
-        if not self.player.is_active():
+            if self.player.is_attacking() and self.player.is_ready():
 
-            self.event = Event.GP_GAMEOVER
+                self.generate_shot(self.player.get_position(),
+                                self.player.get_gun_points(),
+                                self.player.get_bullet_type(),
+                                True,
+                                self.player.get_damage(self.player.get_damage_modifier()))
+                self.player.set_fire_state(False)
 
-        for cloud in self.clouds:
+            if not self.player.is_active():
 
-            cloud.behaviour(self.screen_size)
+                self.event = Event.GP_GAMEOVER
 
-        for bullet in self.bullets:
+            for cloud in self.clouds:
 
-            bullet.behaviour(self.screen_size)
+                cloud.behaviour(self.screen_size)
 
-            if not bullet.is_active():
+            for bullet in self.bullets:
 
-                self.inactive_bullets.append(bullet)
-                self.bullets.remove(bullet)
+                bullet.behaviour(self.screen_size)
 
-        for enemy in self.enemies:
+                if not bullet.is_active():
 
-            enemy.behaviour(tick, self.screen_size, self.player.get_position(), self.enemies)
+                    self.inactive_bullets.append(bullet)
+                    self.bullets.remove(bullet)
 
-            if enemy.is_attacking() and enemy.is_ready():
+            for enemy in self.enemies:
 
-                self.generate_shot(enemy.get_position(),
-                                   enemy.get_gun_points(),
-                                   enemy.get_bullet_type(),
-                                   False,
-                                   enemy.get_damage())
-                enemy.set_fire_state(False)
+                enemy.behaviour(tick, self.screen_size, self.player.get_position(), self.enemies)
 
-            if not enemy.is_active():
+                if enemy.is_attacking() and enemy.is_ready():
 
-                if enemy.is_destroyed():
+                    self.generate_shot(enemy.get_position(),
+                                    enemy.get_gun_points(),
+                                    enemy.get_bullet_type(),
+                                    False,
+                                    enemy.get_damage())
+                    enemy.set_fire_state(False)
 
-                    self.score += enemy.get_score_value()
-                    self.player.change_life(10)
+                if not enemy.is_active():
 
-                self.enemies.remove(enemy)
+                    if enemy.is_destroyed():
 
-        self.enemy_generator()
-        self.elapsed_time += (1 / tick)
+                        self.score += enemy.get_score_value()
+                        self.player.change_life(10)
 
-        while len(self.inactive_bullets) > self.inactive_bullets_limit:
+                    self.enemies.remove(enemy)
 
-            self.inactive_bullets.remove(self.inactive_bullets[0])
+            self.enemy_generator()
+            self.elapsed_time += (1 / tick)
+
+            while len(self.inactive_bullets) > self.inactive_bullets_limit:
+
+                self.inactive_bullets.remove(self.inactive_bullets[0])
 
     def get_event(self):
         '''
@@ -313,7 +316,6 @@ class EnemyFactory():
                               stun_time,
                               '',  # Som
                               '',  # Som
-                              '',  # Som
                               size,
                               os.path.join("Sprites", "Planes", "GER_bf109.png"),
                               angle,
@@ -337,7 +339,6 @@ class EnemyFactory():
                               stun_time,
                               '',  # Som
                               '',  # Som
-                              '',  # Som
                               size,
                               os.path.join("Sprites", "Planes", "JAP_a6m.png"),
                               angle,
@@ -359,7 +360,6 @@ class EnemyFactory():
                               1.0,
                               1.0,
                               stun_time,
-                              '',  # Som
                               '',  # Som
                               '',  # Som
                               size,
@@ -517,7 +517,6 @@ class Aircraft(Entity):
     gun_points: list
     attack_sound: pygame.mixer.Sound
     damage_sound: pygame.mixer.Sound
-    idle_sound: pygame.mixer.Sound
 
     def __init__(self,
                  position,
@@ -531,7 +530,6 @@ class Aircraft(Entity):
                  stun_time,
                  attack_sound,
                  damage_sound,
-                 idle_sound,
                  size,
                  sprite_path,
                  angle,
@@ -672,6 +670,7 @@ class Player(Aircraft):
     damage_modifier: int
     firerate_modifier: int
     armor_modifier: int
+    idle_sound: pygame.mixer.Sound
 
     def __init__(self,
                  position,
@@ -703,7 +702,6 @@ class Player(Aircraft):
                          stun_time,
                          attack_sound,
                          damage_sound,
-                         idle_sound,
                          size,
                          sprite_path,
                          angle,
@@ -714,6 +712,7 @@ class Player(Aircraft):
         self.damage_modifier = 0
         self.firerate_modifier = 0
         self.armor_modifier = 0
+        #self.idle_sound = pygame.mixer.Sound(idle_sound)
 
     def behaviour(self, events, screen_size, tick):
         '''
@@ -836,7 +835,6 @@ class Enemy(Aircraft):
                  stun_time,
                  attack_sound,
                  damage_sound,
-                 idle_sound,
                  size,
                  sprite_path,
                  angle,
@@ -855,7 +853,6 @@ class Enemy(Aircraft):
                          stun_time,
                          attack_sound,
                          damage_sound,
-                         idle_sound,
                          size,
                          sprite_path,
                          angle,
@@ -903,18 +900,6 @@ class Enemy(Aircraft):
 
         if chase_player:
 
-            if (player_position[0] - self.position[0]) < - 100:
-
-                self.velocity[0] = -self.speed
-                self.attacking = False
-            elif (player_position[0] - self.position[0]) > 100:
-
-                self.velocity[0] = self.speed
-                self.attacking = False
-            else:
-
-                self.attacking = True
-
             if (player_position[1] - self.position[1]) < minimum_y_distance and \
                (player_position[1] - self.position[1]) > -minimum_y_distance:
 
@@ -924,6 +909,18 @@ class Enemy(Aircraft):
                 else:
 
                     self.velocity[0] = -self.speed
+
+        if (player_position[0] - self.position[0]) < - 100:
+
+            self.velocity[0] = -self.speed
+            self.attacking = False
+        elif (player_position[0] - self.position[0]) > 100:
+
+            self.velocity[0] = self.speed
+            self.attacking = False
+        else:
+
+            self.attacking = True
 
         if self.position[0] <= 0 - self.size[0] or              \
            self.position[0] >= screen_size[0] + self.size[0] or \
