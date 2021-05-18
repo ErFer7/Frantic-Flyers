@@ -20,7 +20,7 @@ Para fazer:
 
 from game_system import GameManager
 
-VERSION = "v0.10"
+VERSION = "v0.10.1"
 
 game_manager = GameManager(VERSION)
 game_manager.run_game(60)

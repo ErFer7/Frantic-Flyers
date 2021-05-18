@@ -79,3 +79,7 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 * Correções na interface.
 * Correções na física.
 * Modificações no sistema de entidades.
+
+## 0.10.1 - 18/05/2021
+
+* Correção de erro no sistema de arquivos.
