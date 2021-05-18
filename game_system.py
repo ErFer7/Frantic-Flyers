@@ -64,7 +64,8 @@ class GameManager():
                      "Velocity": 25,
                      "Damage": 25,
                      "Firerate": 25,
-                     "Armor": 25}
+                     "Armor": 25,
+                     "Bullet Type": 0}
 
         if len(self.file_system.get_data()) > 0:
 
@@ -148,9 +149,18 @@ class GameManager():
 
                         self.change_modifiers("Armor", True)
                         # Tocar o áudio do botão aqui
+                    elif event == Event.UI_REDUCE_BULLET_TYPE:
+
+                        self.change_modifiers("Bullet Type", False)
+                        # Tocar o áudio do botão aqui
+                    elif event == Event.UI_INCREASE_BULLET_TYPE:
+
+                        self.change_modifiers("Bullet Type", True)
+                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_PLAY:
 
                         self.entities.update_player_modifiers(self.data)
+                        self.entities.reset()
                         self.state = State.GAMEPLAY
                         # Tocar o áudio do botão aqui
                     elif event == Event.UI_EXIT:
@@ -172,7 +182,7 @@ class GameManager():
                         # Tocar o áudio do botão aqui
                     elif event == Event.GP_GAMEOVER:
 
-                        self.entities.reset()
+                        self.data["Modification Points"] += self.entities.get_score() // 500
                         self.state = State.GAMEOVER
 
                     break

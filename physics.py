@@ -36,11 +36,11 @@ class PhysicsManager():
                 velocity = entity.get_velocity()
                 drag = entity.get_drag()
 
-                new_position_x = position[0] + velocity[0] * (1 / tick)
-                new_position_y = position[1] + velocity[1] * (1 / tick)
+                new_position_x = position[0] + velocity[0] / tick
+                new_position_y = position[1] + velocity[1] / tick
 
-                new_velocity_x = velocity[0] * (1.0 + drag * (1 / tick))
-                new_velocity_y = velocity[1] * (1.0 + drag * (1 / tick))
+                new_velocity_x = velocity[0] * (1.0 - drag / tick)
+                new_velocity_y = velocity[1] * (1.0 - drag / tick)
 
                 entity.set_position((new_position_x, new_position_y))
                 entity.set_velocity((new_velocity_x, new_velocity_y))

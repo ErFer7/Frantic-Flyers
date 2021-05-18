@@ -6,7 +6,7 @@ Módulo para as entidades.
 
 import os
 
-from random import randint
+from random import choice, randint
 from enum import Enum
 from math import sqrt
 
@@ -45,11 +45,11 @@ class EntityManager():
                                (0, -5, 125, 35))
 
         self.player = Player((self.screen_size[0] / 2, self.screen_size[1] / 2),
-                             -1.0,
+                             1.0,
                              100,
                              100.0,
                              10.0,
-                             BulletType.SIMPLE,
+                             BulletType.TRIPLE,
                              1.0,
                              1.0,
                              0.25,
@@ -514,10 +514,17 @@ class EnemyFactory():
 
         enemy = None
 
-        position = (randint(150, self.screen_size[0] - 150),
-                    randint(-self.screen_size[1], -150))
+        spawn_positions = []
 
-        drag = -1.0
+        for i in range(150, self.screen_size[0] - 150, 300):
+
+            for j in range(-self.screen_size[1], -150, 300):
+
+                spawn_positions.append((i, j))
+
+        position = choice(spawn_positions)
+
+        drag = 1.0
         stun_time = 0.25
         size = (300, 300)
         angle = 180
@@ -530,9 +537,9 @@ class EnemyFactory():
 
         if difficulty_range <= 10:
 
-            random_number = randint(0, 3)
+            random_number = randint(0, 100)
 
-            if random_number == 0:
+            if random_number < 33:
 
                 hitbox = Hitbox(position,
                                 (0, -12, 35, 120),
@@ -555,7 +562,7 @@ class EnemyFactory():
                               hitbox,
                               ((10, 0), (0, 0), (-10, 0)),
                               100)
-            elif random_number == 1:
+            elif random_number < 66:
 
                 hitbox = Hitbox(position,
                                 (0, -12, 35, 120),
@@ -578,7 +585,7 @@ class EnemyFactory():
                               hitbox,
                               ((10, 0), (0, 0), (-10, 0)),
                               100)
-            else:
+            elif random_number < 98:
 
                 hitbox = Hitbox(position,
                                 (0, -12, 35, 120),
@@ -601,34 +608,35 @@ class EnemyFactory():
                               hitbox,
                               ((10, 0), (0, 0), (-10, 0)),
                               100)
-        elif difficulty_range <= 30:
-
-            random_number = randint(0, 2)
-
-            if random_number == 0:
-
+            else:
+                # Avião para pontos extras
                 hitbox = Hitbox(position,
                                 (0, -12, 35, 120),
                                 (0, 5, 125, 35))
 
                 enemy = Enemy(position,
                               drag,
-                              150,
-                              80.0,
-                              18.0,
+                              10,
+                              200.0,
+                              1.0,
                               BulletType.SIMPLE,
-                              0.75,
-                              1.2,
+                              0.1,
+                              0.1,
                               stun_time,
                               '',  # Som
                               '',  # Som
                               size,
-                              os.path.join("Sprites", "Planes", "JAP_Ki21.png"),
+                              os.path.join("Sprites", "Planes", "USSR_Lagg3.png"),
                               angle,
                               hitbox,
                               ((10, 0), (0, 0), (-10, 0)),
-                              300)
-            else:
+                              1000)
+
+        elif difficulty_range <= 40:
+
+            random_number = randint(0, 2)
+
+            if random_number == 0:
 
                 hitbox = Hitbox(position,
                                 (0, -12, 35, 120),
@@ -641,7 +649,83 @@ class EnemyFactory():
                               12.0,
                               BulletType.SIMPLE,
                               1.0,
+                              1.2,
+                              stun_time,
+                              '',  # Som
+                              '',  # Som
+                              size,
+                              os.path.join("Sprites", "Planes", "GER_bf110.png"),
+                              angle,
+                              hitbox,
+                              ((10, 0), (0, 0), (-10, 0)),
+                              250)
+
+            else:
+
+                hitbox = Hitbox(position,
+                                (0, -12, 35, 120),
+                                (0, 5, 125, 35))
+
+                enemy = Enemy(position,
+                              drag,
+                              150,
+                              90.0,
+                              12.0,
+                              BulletType.SIMPLE,
+                              0.9,
                               1.0,
+                              stun_time,
+                              '',  # Som
+                              '',  # Som
+                              size,
+                              os.path.join("Sprites", "Planes", "GER_He111.png"),
+                              angle,
+                              hitbox,
+                              ((10, 0), (0, 0), (-10, 0)),
+                              250)
+
+        elif difficulty_range <= 80:
+
+            random_number = randint(0, 2)
+
+            if random_number == 0:
+
+                hitbox = Hitbox(position,
+                                (0, -12, 35, 120),
+                                (0, 5, 125, 35))
+
+                enemy = Enemy(position,
+                              drag,
+                              200,
+                              80.0,
+                              18.0,
+                              BulletType.SIMPLE,
+                              0.75,
+                              1.5,
+                              stun_time,
+                              '',  # Som
+                              '',  # Som
+                              size,
+                              os.path.join("Sprites", "Planes", "JAP_Ki21.png"),
+                              angle,
+                              hitbox,
+                              ((10, 0), (0, 0), (-10, 0)),
+                              500)
+
+            else:
+
+                hitbox = Hitbox(position,
+                                (0, -12, 35, 120),
+                                (0, 5, 125, 35))
+
+                enemy = Enemy(position,
+                              drag,
+                              150,
+                              100.0,
+                              13.0,
+                              BulletType.SIMPLE,
+                              1.1,
+                              1.2,
                               stun_time,
                               '',  # Som
                               '',  # Som
@@ -650,8 +734,58 @@ class EnemyFactory():
                               angle,
                               hitbox,
                               ((10, 0), (0, 0), (-10, 0)),
-                              300)
+                              500)
+        else:
 
+            random_number = randint(0, 2)
+
+            if random_number == 0:
+
+                hitbox = Hitbox(position,
+                                (0, -12, 35, 120),
+                                (0, 5, 125, 35))
+
+                enemy = Enemy(position,
+                              drag,
+                              500,
+                              50.0,
+                              24.0,
+                              BulletType.SIMPLE,
+                              0.75,
+                              1.3,
+                              stun_time,
+                              '',  # Som
+                              '',  # Som
+                              size,
+                              os.path.join("Sprites", "Planes", "US_b17.png"),
+                              angle,
+                              hitbox,
+                              ((10, 0), (0, 0), (-10, 0)),
+                              750)
+
+            else:
+
+                hitbox = Hitbox(position,
+                                (0, -12, 35, 120),
+                                (0, 5, 125, 35))
+
+                enemy = Enemy(position,
+                              drag,
+                              777,
+                              40.0,
+                              30.0,
+                              BulletType.SIMPLE,
+                              1.0,
+                              1.5,
+                              stun_time,
+                              '',  # Som
+                              '',  # Som
+                              size,
+                              os.path.join("Sprites", "Planes", "UK_Lancaster.png"),
+                              angle,
+                              hitbox,
+                              ((10, 0), (0, 0), (-10, 0)),
+                              750)
         return enemy
 
 
@@ -1042,11 +1176,11 @@ class Player(Aircraft):
 
             if self.direction[0] != 0:
 
-                self.velocity[0] = self.direction[0] * self.speed * self.velocity_modifier * 0.05
+                self.velocity[0] = self.direction[0] * (self.speed + self.velocity_modifier * 4)
 
             if self.direction[1] != 0:
 
-                self.velocity[1] = self.direction[1] * self.speed * self.velocity_modifier * 0.05
+                self.velocity[1] = self.direction[1] * (self.speed + self.velocity_modifier * 4)
 
         if self.position[0] <= 0:
 
@@ -1083,6 +1217,19 @@ class Player(Aircraft):
         self.firerate_modifier = modifiers["Firerate"]
         self.armor_modifier = modifiers["Armor"]
 
+        if modifiers["Bullet Type"] <= 25:
+
+            self.bullet_type = BulletType.SIMPLE
+        elif modifiers["Bullet Type"] <= 50:
+
+            self.bullet_type = BulletType.DOUBLE
+        elif modifiers["Bullet Type"] <= 75:
+
+            self.bullet_type = BulletType.TRIPLE
+        else:
+
+            self.bullet_type = BulletType.TRIPLE_IN_ANGLE
+
     def get_damage_modifier(self):
         '''
         Retorna o modificador de dano.
@@ -1102,6 +1249,9 @@ class Player(Aircraft):
         Redefine o jogador.
         '''
 
+        self.active = True
+        self.attacking = False
+        self.stunned = False
         self.life = self.max_life
         self.velocity = [0, 0]
         self.position = list(position)
@@ -1192,23 +1342,27 @@ class Enemy(Aircraft):
 
         if chase_player:
 
-            if (player_position[1] - self.position[1]) < minimum_y_distance and \
-               (player_position[1] - self.position[1]) > -minimum_y_distance:
+            if abs(player_position[0] - self.position[0]) > 100:
 
-                if (player_position[0] - self.position[0]) < 0:
+                if (player_position[1] - self.position[1]) > minimum_y_distance:
 
-                    self.velocity[0] = self.speed
+                    direction = -1
                 else:
 
-                    self.velocity[0] = -self.speed
+                    direction = 1
+
+                if player_position[0] < self.position[0]:
+
+                    self.velocity[0] = self.speed * direction
+                else:
+
+                    self.velocity[0] = self.speed * -direction
 
         if (player_position[0] - self.position[0]) < - 100:
 
-            self.velocity[0] = -self.speed
             self.attacking = False
         elif (player_position[0] - self.position[0]) > 100:
 
-            self.velocity[0] = self.speed
             self.attacking = False
         else:
 

@@ -23,12 +23,14 @@ class Event(Enum):
     UI_INCREASE_FIRERATE = 8
     UI_REDUCE_ARMOR = 9
     UI_INCREASE_ARMOR = 10
-    UI_PLAY = 11
-    UI_EXIT = 12
-    UI_PAUSE = 13
-    UI_RESUME = 14
-    UI_RESTART = 15
-    GP_GAMEOVER = 16
+    UI_REDUCE_BULLET_TYPE = 11
+    UI_INCREASE_BULLET_TYPE = 12
+    UI_PLAY = 13
+    UI_EXIT = 14
+    UI_PAUSE = 15
+    UI_RESUME = 16
+    UI_RESTART = 17
+    GP_GAMEOVER = 18
 
 
 class State(Enum):

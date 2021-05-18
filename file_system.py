@@ -34,7 +34,7 @@ class FileSystem():
 
             directory = os.path.dirname(path)
 
-            if not os.path.exists(path):
+            if not os.path.exists(directory):
 
                 os.makedirs(directory)
 

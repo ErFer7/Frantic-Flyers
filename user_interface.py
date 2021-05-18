@@ -78,7 +78,7 @@ class UserInterfaceManager():
             self.pause_interface.render(display)
         elif state == State.GAMEOVER:
 
-            self.gameover_interface.update(score, modification_data["Modification Points"])
+            self.gameover_interface.update(score, score // 500)
 
             for event in events:
 
@@ -232,7 +232,9 @@ class Button():
                 is_clicked = self.sprites.sprites()[0].rect.collidepoint(event.pos)
             elif event.type == pygame.KEYDOWN:
 
-                key_is_pressed = self.key == event.key
+                if self.key is not None:
+
+                    key_is_pressed = self.key == event.key
 
         if is_clicked or key_is_pressed:
 
@@ -292,7 +294,7 @@ class Text():
 
         self.merged_surface = pygame.Surface((self.text.get_rect().width,
                                               self.text.get_rect().height),
-                                             pygame.SRCALPHA)
+                                              pygame.SRCALPHA)
 
         if self.has_shadow:
 
@@ -556,13 +558,21 @@ class ModificationMenu(UserInterface):
                                         (138, 200, 230))
 
         self.buttons["Play"] = Button(Alignment.BOTTOM,
-                                      (0, 100),
+                                      (0, 40),
                                       (400, 100),
                                       Event.UI_PLAY,
                                       pygame.K_RETURN,
                                       screen_size,
                                       (108, 155, 179),
                                       (138, 200, 230))
+
+        self.texts["Play"] = Text("JOGAR",
+                                  Alignment.BOTTOM,
+                                  (0, 70),
+                                  40,
+                                  (230, 230, 230),
+                                  screen_size,
+                                  False)
 
         self.texts["Title"] = Text("MODIFICAR",
                                    Alignment.TOP,
@@ -609,8 +619,8 @@ class ModificationMenu(UserInterface):
 
         self.texts["Velocity Number"] = Text("XXX",
                                              Alignment.LEFT,
-                                             (685, 125),
-                                             30,
+                                             (700, 125),
+                                             25,
                                              (230, 230, 230),
                                              screen_size,
                                              False)
@@ -626,7 +636,7 @@ class ModificationMenu(UserInterface):
                                                  (350, 125),
                                                  (100, 50),
                                                  Event.UI_REDUCE_VELOCITY,
-                                                 pygame.K_y,
+                                                 None,
                                                  screen_size,
                                                  (108, 155, 179),
                                                  (138, 200, 230))
@@ -643,7 +653,7 @@ class ModificationMenu(UserInterface):
                                                    (200, 125),
                                                    (100, 50),
                                                    Event.UI_INCREASE_VELOCITY,
-                                                   pygame.K_h,
+                                                   None,
                                                    screen_size,
                                                    (108, 155, 179),
                                                    (138, 200, 230))
@@ -667,8 +677,8 @@ class ModificationMenu(UserInterface):
 
         self.texts["Damage Number"] = Text("XXX",
                                            Alignment.LEFT,
-                                           (685, 50),
-                                           30,
+                                           (700, 50),
+                                           25,
                                            (230, 230, 230),
                                            screen_size,
                                            False)
@@ -684,7 +694,7 @@ class ModificationMenu(UserInterface):
                                                (350, 50),
                                                (100, 50),
                                                Event.UI_REDUCE_DAMAGE,
-                                               pygame.K_u,
+                                               None,
                                                screen_size,
                                                (108, 155, 179),
                                                (138, 200, 230))
@@ -701,7 +711,7 @@ class ModificationMenu(UserInterface):
                                                  (200, 50),
                                                  (100, 50),
                                                  Event.UI_INCREASE_DAMAGE,
-                                                 pygame.K_j,
+                                                 None,
                                                  screen_size,
                                                  (108, 155, 179),
                                                  (138, 200, 230))
@@ -725,8 +735,8 @@ class ModificationMenu(UserInterface):
 
         self.texts["Firerate Number"] = Text("XXX",
                                              Alignment.LEFT,
-                                             (685, -25),
-                                             30,
+                                             (700, -25),
+                                             25,
                                              (230, 230, 230),
                                              screen_size,
                                              False)
@@ -742,7 +752,7 @@ class ModificationMenu(UserInterface):
                                                  (350, -25),
                                                  (100, 50),
                                                  Event.UI_REDUCE_FIRERATE,
-                                                 pygame.K_i,
+                                                 None,
                                                  screen_size,
                                                  (108, 155, 179),
                                                  (138, 200, 230))
@@ -759,7 +769,7 @@ class ModificationMenu(UserInterface):
                                                    (200, -25),
                                                    (100, 50),
                                                    Event.UI_INCREASE_FIRERATE,
-                                                   pygame.K_k,
+                                                   None,
                                                    screen_size,
                                                    (108, 155, 179),
                                                    (138, 200, 230))
@@ -783,8 +793,8 @@ class ModificationMenu(UserInterface):
 
         self.texts["Armor Number"] = Text("XXX",
                                           Alignment.LEFT,
-                                          (685, -100),
-                                          30,
+                                          (700, -100),
+                                          25,
                                           (230, 230, 230),
                                           screen_size,
                                           False)
@@ -800,7 +810,7 @@ class ModificationMenu(UserInterface):
                                               (350, -100),
                                               (100, 50),
                                               Event.UI_REDUCE_ARMOR,
-                                              pygame.K_o,
+                                              None,
                                               screen_size,
                                               (108, 155, 179),
                                               (138, 200, 230))
@@ -817,7 +827,7 @@ class ModificationMenu(UserInterface):
                                                 (200, -100),
                                                 (100, 50),
                                                 Event.UI_INCREASE_ARMOR,
-                                                pygame.K_l,
+                                                None,
                                                 screen_size,
                                                 (108, 155, 179),
                                                 (138, 200, 230))
@@ -830,18 +840,85 @@ class ModificationMenu(UserInterface):
                                         screen_size,
                                         False)
 
-        self.texts["Play"] = Text("JOGAR",
-                                  Alignment.BOTTOM,
-                                  (0, 130),
-                                  40,
-                                  (230, 230, 230),
-                                  screen_size,
-                                  False)
+        self.texts["Bullet Type"] = Text("ARMA:",
+                                         Alignment.LEFT,
+                                         (100, -175),
+                                         40,
+                                         (77, 111, 128),
+                                         screen_size,
+                                         True,
+                                         (138, 200, 230))
+
+        self.texts["Bullet Type Number"] = Text("XXX: XXXXXX XXXXXXXX",
+                                                Alignment.LEFT,
+                                                (500, -175),
+                                                25,
+                                                (230, 230, 230),
+                                                screen_size,
+                                                False)
+
+        self.bars["Bullet Type"] = Bar(Alignment.LEFT,
+                                       (475, -180),
+                                       (500, 50),
+                                       (108, 155, 179),
+                                       (138, 200, 230),
+                                       screen_size)
+
+        self.buttons["Reduce Bullet Type"] = Button(Alignment.RIGHT,
+                                                    (350, -175),
+                                                    (100, 50),
+                                                    Event.UI_REDUCE_BULLET_TYPE,
+                                                    None,
+                                                    screen_size,
+                                                    (108, 155, 179),
+                                                    (138, 200, 230))
+
+        self.texts["Bullet Type Minus"] = Text('-',
+                                               Alignment.RIGHT,
+                                               (317, -175),
+                                               40,
+                                               (230, 230, 230),
+                                               screen_size,
+                                               False)
+
+        self.buttons["Increase Bullet Type"] = Button(Alignment.RIGHT,
+                                                      (200, -175),
+                                                      (100, 50),
+                                                      Event.UI_INCREASE_BULLET_TYPE,
+                                                      None,
+                                                      screen_size,
+                                                      (108, 155, 179),
+                                                      (138, 200, 230))
+
+        self.texts["Bullet Type Plus"] = Text('+',
+                                              Alignment.RIGHT,
+                                              (167, -175),
+                                              40,
+                                              (230, 230, 230),
+                                              screen_size,
+                                              False)
+
 
     def update(self, modification_data):
         '''
         Atualiza os dados dos componentes da interface.
         '''
+
+        bullet_type_number = modification_data["Bullet Type"]
+        bullet_type = f"{bullet_type_number}: "
+
+        if bullet_type_number <= 25:
+
+            bullet_type += "SIMPLES"
+        elif bullet_type_number <= 50:
+
+            bullet_type += "DUPLO"
+        elif bullet_type_number <= 75:
+
+            bullet_type += "TRIPLO"
+        else:
+
+            bullet_type += "TRIPLO AVANÇADO"
 
         self.texts["Point Number"].update(str(modification_data["Modification Points"]))
         self.texts["Velocity Number"].update(str(modification_data["Velocity"]))
@@ -852,6 +929,8 @@ class ModificationMenu(UserInterface):
         self.bars["Firerate"].update(modification_data["Firerate"])
         self.texts["Armor Number"].update(str(modification_data["Armor"]))
         self.bars["Armor"].update(modification_data["Armor"])
+        self.texts["Bullet Type Number"].update(bullet_type)
+        self.bars["Bullet Type"].update(bullet_type_number)
 
 
 class GameplayInterface(UserInterface):

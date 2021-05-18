@@ -88,10 +88,16 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 
 * Correção de erro que gerava um loop infinito ao perder o jogo.
 
-# 0.11 - 18/05/2021
+## 0.11 - 18/05/2021
 
 * Tipos de balas diferentes adicionadas.
 
-# 0.12 - 18/05/2021
+## 0.12 - 18/05/2021
 
 * Agora o jogo pode ser reiniciado e jogado novamente.
+
+## 0.13 - 18/05/2021
+
+* Agora é possível modificar o tipo de bala.
+* Correção na inteligência dos inimigos.
+* Melhorias no spawn dos inimigos.
