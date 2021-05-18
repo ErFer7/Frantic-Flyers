@@ -33,11 +33,13 @@ class EntityManager():
     inactive_bullets: list  # Usado no pooling
     inactive_bullets_limit: int
     enemies_limit: int
+    small_animation_limit: int
     enemy_factory: None
+    animation_factory: None
     elapsed_time: float
     event: Event
 
-    def __init__(self, screen_size, inactive_bullets_limit, enemies_limit):
+    def __init__(self, screen_size, inactive_bullets_limit, enemies_limit, small_animation_limit):
 
         self.score = 0
         self.screen_size = screen_size
@@ -71,7 +73,9 @@ class EntityManager():
         self.inactive_bullets = []
         self.inactive_bullets_limit = inactive_bullets_limit
         self.enemies_limit = enemies_limit
+        self.small_animation_limit = small_animation_limit
         self.enemy_factory = EnemyFactory(self.screen_size, 300.0)
+        self.animation_factory = AnimationFactory()
         self.elapsed_time = 0.0
         self.event = None
 
@@ -441,6 +445,13 @@ class EntityManager():
 
                 self.player.set_fire_state(False)
 
+            if self.player.is_damaged():
+
+                if len(self.animations) <= self.small_animation_limit:
+
+                    self.animations.append(self.animation_factory.generate_explosion(
+                        self.player.get_position(), True))
+
             if not self.player.is_active():
 
                 self.event = Event.GP_GAMEOVER
@@ -471,6 +482,13 @@ class EntityManager():
                                        enemy.get_damage())
                     enemy.set_fire_state(False)
 
+                if enemy.is_damaged():
+
+                    if len(self.animations) <= self.small_animation_limit:
+
+                        self.animations.append(
+                            self.animation_factory.generate_explosion(enemy.get_position(), True))
+
                 if not enemy.is_active():
 
                     if enemy.is_destroyed():
@@ -478,18 +496,9 @@ class EntityManager():
                         self.score += enemy.get_score_value()
                         self.player.change_life(10)
 
-                        sprite_path = []
-
-                        for i in range(50):
-
-                            sprite_path.append(os.path.join("Sprites",
-                                                            "Animations",
-                                                            "Explosion 1",
-                                                            f"1_{i}.png"))
-
-                        self.animations.append(Explosion(enemy.get_position(),
-                                                         (300, 300),
-                                                         sprite_path))
+                        # Sempre explode, idependente do limite
+                        self.animations.append(
+                            self.animation_factory.generate_explosion(enemy.get_position(), False))
 
                     self.enemies.remove(enemy)
 
@@ -632,7 +641,7 @@ class EnemyFactory():
                               hitbox,
                               ((10, 0), (0, 0), (-10, 0)),
                               100)
-            else: # Avião para pontos extras
+            else:  # Avião para pontos extras
 
                 hitbox = Hitbox(position,
                                 (0, -12, 35, 120),
@@ -812,6 +821,54 @@ class EnemyFactory():
         return enemy
 
 
+class AnimationFactory():
+
+    '''
+    Auxilia na criação de uma animação.
+    '''
+
+    path_lists: list
+
+    def __init__(self):
+
+        self.path_lists = []
+
+        for i in range(5):
+
+            path_list = []
+
+            file_number = len(os.listdir(os.path.join("Sprites",
+                                                      "Animations",
+                                                      f"Explosion {i + 1}")))
+
+            for j in range(file_number):
+
+                path_list.append(os.path.join("Sprites",
+                                              "Animations",
+                                              f"Explosion {i + 1}",
+                                              f"{j}.png"))
+
+            self.path_lists.append(path_list)
+
+    def generate_explosion(self, position, small):
+        '''
+        Gera uma entidade animada de explosão.
+        '''
+
+        size = (300, 300)
+
+        index = 0
+
+        if small:
+
+            index = randint(0, 2)
+        else:
+
+            index = randint(3, 4)
+
+        return Explosion(position, size, self.path_lists[index])
+
+
 class BulletType(Enum):
 
     '''
@@ -863,9 +920,9 @@ class Entity():
 
             self.sprite = CustomSprite((self.position[0] - size[0] / 2,
                                         self.position[1] - size[1] / 2),
-                                    size,
-                                    sprite_path,
-                                    angle=angle)
+                                       size,
+                                       sprite_path,
+                                       angle=angle)
 
     def get_position(self):
         '''
@@ -964,6 +1021,7 @@ class Aircraft(Entity):
     stunned: bool
     attacking: bool
     destroyed: bool
+    damaged: bool
     gun_points: list
     attack_sound: pygame.mixer.Sound
     damage_sound: pygame.mixer.Sound
@@ -1004,6 +1062,7 @@ class Aircraft(Entity):
         self.stunned = False
         self.attacking = False
         self.destroyed = False
+        self.damaged = False
         self.gun_points = list(gun_points)
         # self.attack_sound = pygame.mixer.Sound() --som do tiro
         # self.damage_sound = pygame.mixer.Sound() --som quando a nave leva dano
@@ -1019,6 +1078,7 @@ class Aircraft(Entity):
 
                 self.life += int(value * (1.0 / (self.armor + armor_modifier / 100.0)))
                 self.stunned = True
+                self.damaged = True
         else:
 
             self.life += int(value)
@@ -1108,6 +1168,16 @@ class Aircraft(Entity):
         '''
 
         return self.destroyed
+
+    def is_damaged(self):
+        '''
+        Retorna verdadeiro caso a aeronave tenha sofrido dano.
+        '''
+
+        damaged = self.damaged
+        self.damaged = False
+
+        return damaged
 
 
 class Player(Aircraft):

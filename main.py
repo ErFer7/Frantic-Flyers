@@ -17,7 +17,7 @@ Para fazer:
 
 from game_system import GameManager
 
-VERSION = "v0.13.1"
+VERSION = "v0.14"
 
 game_manager = GameManager(VERSION)
 game_manager.run_game(60)

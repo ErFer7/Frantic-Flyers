@@ -105,3 +105,7 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 ## 0.13.1 - 18/05/2021
 
 * Sistema de animação criado.
+
+## 0.14 - 18/05/2021
+
+* Sistema de animações completo.

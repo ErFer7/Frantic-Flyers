@@ -76,7 +76,7 @@ class GameManager():
 
         screen_size = (self.display.get_width(), self.display.get_height())
 
-        self.entities = EntityManager(screen_size, 100, 10)
+        self.entities = EntityManager(screen_size, 100, 10, 5)
         self.physics = PhysicsManager()
         self.graphics = GraphicsManager((92, 184, 230))
         self.user_interface = UserInterfaceManager(screen_size, version)
