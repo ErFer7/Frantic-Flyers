@@ -10,14 +10,12 @@ Para fazer:
 
 * Sistema de entidades
     * Fábrica de inimigos
-* Sistema gráfico
-    * Animações
 * Som e música
 '''
 
 from game_system import GameManager
 
-VERSION = "v0.14"
+VERSION = "v0.14.1"
 
 game_manager = GameManager(VERSION)
 game_manager.run_game(60)

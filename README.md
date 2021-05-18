@@ -109,3 +109,7 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 ## 0.14 - 18/05/2021
 
 * Sistema de animações completo.
+
+## 0.14.1 - 18/05/2021
+
+* Hitbox dos aviões definida.

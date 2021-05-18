@@ -641,7 +641,7 @@ class EnemyFactory():
                               hitbox,
                               ((10, 0), (0, 0), (-10, 0)),
                               100)
-            else:  # Avião para pontos extras
+            else: # Avião para pontos extras
 
                 hitbox = Hitbox(position,
                                 (0, -12, 35, 120),
@@ -671,8 +671,8 @@ class EnemyFactory():
             if random_number == 0:
 
                 hitbox = Hitbox(position,
-                                (0, -12, 35, 120),
-                                (0, 5, 125, 35))
+                                (0, -5, 35, 130),
+                                (0, 15, 165, 35))
 
                 enemy = Enemy(position,
                               drag,
@@ -695,8 +695,8 @@ class EnemyFactory():
             else:
 
                 hitbox = Hitbox(position,
-                                (0, -12, 35, 120),
-                                (0, 5, 125, 35))
+                                (0, -8, 35, 145),
+                                (0, 20, 200, 40))
 
                 enemy = Enemy(position,
                               drag,
@@ -722,8 +722,8 @@ class EnemyFactory():
             if random_number == 0:
 
                 hitbox = Hitbox(position,
-                                (0, -12, 35, 120),
-                                (0, 5, 125, 35))
+                                (0, -15, 35, 155),
+                                (0, 5, 210, 40))
 
                 enemy = Enemy(position,
                               drag,
@@ -746,8 +746,8 @@ class EnemyFactory():
             else:
 
                 hitbox = Hitbox(position,
-                                (0, -12, 35, 120),
-                                (0, 5, 125, 35))
+                                (0, 0, 35, 155),
+                                (0, 12, 215, 35))
 
                 enemy = Enemy(position,
                               drag,
@@ -773,8 +773,8 @@ class EnemyFactory():
             if random_number == 0:
 
                 hitbox = Hitbox(position,
-                                (0, -12, 35, 120),
-                                (0, 5, 125, 35))
+                                (0, -12, 35, 220),
+                                (0, 18, 295, 50))
 
                 enemy = Enemy(position,
                               drag,
@@ -797,8 +797,8 @@ class EnemyFactory():
             else:
 
                 hitbox = Hitbox(position,
-                                (0, -12, 35, 120),
-                                (0, 5, 125, 35))
+                                (0, -12, 40, 215),
+                                (0, 18, 295, 50))
 
                 enemy = Enemy(position,
                               drag,
