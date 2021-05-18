@@ -49,7 +49,7 @@ class EntityManager():
                              100,
                              100.0,
                              10.0,
-                             BulletType.SIMPLE,
+                             BulletType.TRIPLE_IN_ANGLE,
                              1.0,
                              1.0,
                              0.25,
@@ -60,7 +60,7 @@ class EntityManager():
                              os.path.join("Sprites", "Planes", "UK_Spitfire.png"),
                              0,
                              player_hitbox,
-                             ((-10, 0), (0, 0), (10, 0)))
+                             ((-28, 0), (0, 0), (28, 0)))
 
         self.enemies = []
         self.bullets = []
@@ -138,33 +138,254 @@ class EntityManager():
         Gera o tiro.
         '''
 
+        instatiation_position = (0, 0)
+        size = (3, 9)
+        path = os.path.join("Sprites", "Bullets", "Bullet.png")
+        velocity = 500.0
+
+        if friendly:
+
+            velocity = -500.0
+
         if bullet_type == BulletType.SIMPLE:
 
             position_x = gun_points[1][0] + position[0]
             position_y = gun_points[1][1] + position[1]
-            velocity_y = 500.0
-
-            if friendly:
-
-                velocity_y = -500.0
 
             if len(self.inactive_bullets) > 0:
 
                 bullet = self.inactive_bullets[0]
-                bullet.shoot((position_x, position_y), (0.0, velocity_y), friendly, damage)
+                bullet.shoot((position_x, position_y), (0.0, velocity), friendly, damage)
                 self.bullets.append(bullet)
                 self.inactive_bullets.remove(bullet)
             else:
 
-                bullet = Bullet((0, 0),
-                                (3, 9),
-                                os.path.join("Sprites", "Bullets", "Bullet.png"),
-                                0,
+                bullet = Bullet(instatiation_position,
+                                size,
+                                path,
                                 None,
                                 friendly,
                                 damage)
-                bullet.shoot((position_x, position_y), (0.0, velocity_y), friendly, damage)
+                bullet.shoot((position_x, position_y), (0.0, velocity), friendly, damage)
                 self.bullets.append(bullet)
+        elif bullet_type == BulletType.DOUBLE:
+
+            position_x_left = gun_points[0][0] + position[0]
+            position_y_left = gun_points[0][1] + position[1]
+
+            position_x_right = gun_points[2][0] + position[0]
+            position_y_right = gun_points[2][1] + position[1]
+
+            if len(self.inactive_bullets) > 1:
+
+                bullet_left = self.inactive_bullets[0]
+                bullet_right = self.inactive_bullets[1]
+
+                bullet_left.shoot((position_x_left, position_y_left),
+                                  (0.0, velocity),
+                                  friendly,
+                                  damage)
+
+                bullet_right.shoot((position_x_right, position_y_right),
+                                   (0.0, velocity),
+                                   friendly,
+                                   damage)
+
+                self.bullets.append(bullet_left)
+                self.inactive_bullets.remove(bullet_left)
+
+                self.bullets.append(bullet_right)
+                self.inactive_bullets.remove(bullet_right)
+            else:
+
+                bullet_left = Bullet(instatiation_position,
+                                     size,
+                                     path,
+                                     None,
+                                     friendly,
+                                     damage)
+
+                bullet_right = Bullet(instatiation_position,
+                                      size,
+                                      path,
+                                      None,
+                                      friendly,
+                                      damage)
+
+                bullet_left.shoot((position_x_left, position_y_left),
+                                  (0.0, velocity),
+                                  friendly,
+                                  damage)
+
+                bullet_right.shoot((position_x_right, position_y_right),
+                                   (0.0, velocity),
+                                   friendly,
+                                   damage)
+
+                self.bullets.append(bullet_left)
+                self.bullets.append(bullet_right)
+        elif bullet_type == BulletType.TRIPLE:
+
+            position_x_left = gun_points[0][0] + position[0]
+            position_y_left = gun_points[0][1] + position[1]
+
+            position_x_center = gun_points[1][0] + position[0]
+            position_y_center = gun_points[1][1] + position[1]
+
+            position_x_right = gun_points[2][0] + position[0]
+            position_y_right = gun_points[2][1] + position[1]
+
+            if len(self.inactive_bullets) > 2:
+
+                bullet_left = self.inactive_bullets[0]
+                bullet_center = self.inactive_bullets[1]
+                bullet_right = self.inactive_bullets[2]
+
+                bullet_left.shoot((position_x_left, position_y_left),
+                                  (0.0, velocity),
+                                  friendly,
+                                  damage)
+
+                bullet_center.shoot((position_x_center, position_y_center),
+                                    (0.0, velocity),
+                                    friendly,
+                                    damage)
+
+                bullet_right.shoot((position_x_right, position_y_right),
+                                   (0.0, velocity),
+                                   friendly,
+                                   damage)
+
+                self.bullets.append(bullet_left)
+                self.inactive_bullets.remove(bullet_left)
+
+                self.bullets.append(bullet_center)
+                self.inactive_bullets.remove(bullet_center)
+
+                self.bullets.append(bullet_right)
+                self.inactive_bullets.remove(bullet_right)
+            else:
+
+                bullet_left = Bullet(instatiation_position,
+                                     size,
+                                     path,
+                                     None,
+                                     friendly,
+                                     damage)
+
+                bullet_center = Bullet(instatiation_position,
+                                       size,
+                                       path,
+                                       None,
+                                       friendly,
+                                       damage)
+
+                bullet_right = Bullet(instatiation_position,
+                                      size,
+                                      path,
+                                      None,
+                                      friendly,
+                                      damage)
+
+                bullet_left.shoot((position_x_left, position_y_left),
+                                  (0.0, velocity),
+                                  friendly,
+                                  damage)
+
+                bullet_center.shoot((position_x_center, position_y_center),
+                                    (0.0, velocity),
+                                    friendly,
+                                    damage)
+
+                bullet_right.shoot((position_x_right, position_y_right),
+                                   (0.0, velocity),
+                                   friendly,
+                                   damage)
+
+                self.bullets.append(bullet_left)
+                self.bullets.append(bullet_center)
+                self.bullets.append(bullet_right)
+        else:
+
+            position_x_left = gun_points[0][0] + position[0]
+            position_y_left = gun_points[0][1] + position[1]
+
+            position_x_center = gun_points[1][0] + position[0]
+            position_y_center = gun_points[1][1] + position[1]
+
+            position_x_right = gun_points[2][0] + position[0]
+            position_y_right = gun_points[2][1] + position[1]
+
+            if len(self.inactive_bullets) > 2:
+
+                bullet_left = self.inactive_bullets[0]
+                bullet_center = self.inactive_bullets[1]
+                bullet_right = self.inactive_bullets[2]
+
+                bullet_left.shoot((position_x_left, position_y_left),
+                                  (-velocity, velocity),
+                                  friendly,
+                                  damage)
+
+                bullet_center.shoot((position_x_center, position_y_center),
+                                    (0.0, velocity),
+                                    friendly,
+                                    damage)
+
+                bullet_right.shoot((position_x_right, position_y_right),
+                                   (velocity, velocity),
+                                   friendly,
+                                   damage)
+
+                self.bullets.append(bullet_left)
+                self.inactive_bullets.remove(bullet_left)
+
+                self.bullets.append(bullet_center)
+                self.inactive_bullets.remove(bullet_center)
+
+                self.bullets.append(bullet_right)
+                self.inactive_bullets.remove(bullet_right)
+            else:
+
+                bullet_left = Bullet(instatiation_position,
+                                     size,
+                                     path,
+                                     None,
+                                     friendly,
+                                     damage)
+
+                bullet_center = Bullet(instatiation_position,
+                                       size,
+                                       path,
+                                       None,
+                                       friendly,
+                                       damage)
+
+                bullet_right = Bullet(instatiation_position,
+                                      size,
+                                      path,
+                                      None,
+                                      friendly,
+                                      damage)
+
+                bullet_left.shoot((position_x_left, position_y_left),
+                                  (-velocity, velocity),
+                                  friendly,
+                                  damage)
+
+                bullet_center.shoot((position_x_center, position_y_center),
+                                    (0.0, velocity),
+                                    friendly,
+                                    damage)
+
+                bullet_right.shoot((position_x_right, position_y_right),
+                                   (velocity, velocity),
+                                   friendly,
+                                   damage)
+
+                self.bullets.append(bullet_left)
+                self.bullets.append(bullet_center)
+                self.bullets.append(bullet_right)
 
     def enemy_generator(self):
         '''
@@ -945,9 +1166,9 @@ class Bullet(Entity):
     friendly: bool
     damage: int
 
-    def __init__(self, position, size, sprite_path, angle, hitbox, friendly, damage):
+    def __init__(self, position, size, sprite_path, hitbox, friendly, damage):
 
-        super().__init__(position, 0.0, size, sprite_path, angle, hitbox)
+        super().__init__(position, 0.0, size, sprite_path, 0, hitbox)
 
         self.friendly = friendly
         self.damage = damage

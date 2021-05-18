@@ -87,3 +87,7 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 ## 0.10.2 - 18/05/2021
 
 * Correção de erro que gerava um loop infinito ao perder o jogo.
+
+# 0.11 - 18/05/2021
+
+* Tipos de balas diferentes adicionadas.
