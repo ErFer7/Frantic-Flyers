@@ -88,3 +88,59 @@ class CustomSprite(pygame.sprite.Sprite):
 
         self.rect.x = int(position[0])
         self.rect.y = int(position[1])
+
+class CustomAnimatedSprite(pygame.sprite.Sprite):
+
+    '''
+    Sprite que pode ser animado.
+    '''
+
+    images: list
+    animating: bool
+    step: int
+
+    def __init__(self, position, size, path_list):
+
+        super().__init__()
+
+        self.images = []
+        self.animating = False
+        self.step = 0
+
+        for path in path_list:
+
+            self.images.append(pygame.transform.scale(pygame.image.load(path).convert_alpha(),
+                                                      size))
+
+        self.image = self.images[0]
+        self.rect = self.image.get_rect()
+        self.rect.x = position[0]
+        self.rect.y = position[1]
+
+    def start_animation(self):
+        '''
+        Inicia a animação.
+        '''
+
+        self.animating = True
+
+    def animate_frame(self):
+        '''
+        Anima um frame.
+        '''
+
+        if self.animating and self.step < len(self.images):
+
+            self.image = self.images[self.step]
+            self.step += 1
+        else:
+
+            self.step = 0
+            self.animating = False
+
+    def is_animating(self):
+        '''
+        Retorna verdadeiro caso o sprite esteja sendo animado.
+        '''
+
+        return self.animating

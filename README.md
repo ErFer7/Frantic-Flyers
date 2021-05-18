@@ -101,3 +101,7 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 * Agora é possível modificar o tipo de bala.
 * Correção na inteligência dos inimigos.
 * Melhorias no spawn dos inimigos.
+
+## 0.13.1 - 18/05/2021
+
+* Sistema de animação criado.

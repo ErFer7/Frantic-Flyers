@@ -12,7 +12,7 @@ from math import sqrt
 
 import pygame
 
-from graphics import CustomSprite
+from graphics import CustomSprite, CustomAnimatedSprite
 from physics import Hitbox
 from states import Event, State
 
@@ -29,6 +29,7 @@ class EntityManager():
     enemies: list
     bullets: list
     clouds: list
+    animations: list
     inactive_bullets: list  # Usado no pooling
     inactive_bullets_limit: int
     enemies_limit: int
@@ -66,6 +67,7 @@ class EntityManager():
         self.enemies = []
         self.bullets = []
         self.clouds = []
+        self.animations = []
         self.inactive_bullets = []
         self.inactive_bullets_limit = inactive_bullets_limit
         self.enemies_limit = enemies_limit
@@ -96,12 +98,12 @@ class EntityManager():
 
         return self.score
 
-    def get_entities(self, filter_dict):
+    def get_entities(self, physics_entities):
         '''
         Retorna uma lista de entidades.
         '''
 
-        if filter_dict:
+        if physics_entities:
 
             return {"Clouds": self.clouds,
                     "Bullets": self.bullets,
@@ -109,7 +111,7 @@ class EntityManager():
                     "Player": self.player}
         else:
 
-            return self.clouds + self.bullets + self.enemies + [self.player]
+            return self.clouds + self.bullets + self.enemies + [self.player] + self.animations
 
     def generate_clouds(self, cloud_count):
         '''
@@ -476,7 +478,28 @@ class EntityManager():
                         self.score += enemy.get_score_value()
                         self.player.change_life(10)
 
+                        sprite_path = []
+
+                        for i in range(50):
+
+                            sprite_path.append(os.path.join("Sprites",
+                                                            "Animations",
+                                                            "Explosion 1",
+                                                            f"1_{i}.png"))
+
+                        self.animations.append(Explosion(enemy.get_position(),
+                                                         (300, 300),
+                                                         sprite_path))
+
                     self.enemies.remove(enemy)
+
+            for animation in self.animations:
+
+                animation.behaviour()
+
+                if not animation.is_active():
+
+                    self.animations.remove(animation)
 
             self.enemy_generator()
             self.elapsed_time += (1 / tick)
@@ -536,7 +559,7 @@ class EnemyFactory():
 
         difficulty_range = randint(0, int(100.0 * difficulty / self.max_difficulty))
 
-        if difficulty_range <= 10:
+        if difficulty_range <= 25:
 
             random_number = randint(0, 100)
 
@@ -609,8 +632,8 @@ class EnemyFactory():
                               hitbox,
                               ((10, 0), (0, 0), (-10, 0)),
                               100)
-            else:
-                # Avião para pontos extras
+            else: # Avião para pontos extras
+
                 hitbox = Hitbox(position,
                                 (0, -12, 35, 120),
                                 (0, 5, 125, 35))
@@ -632,8 +655,7 @@ class EnemyFactory():
                               hitbox,
                               ((10, 0), (0, 0), (-10, 0)),
                               1000)
-
-        elif difficulty_range <= 40:
+        elif difficulty_range <= 50:
 
             random_number = randint(0, 2)
 
@@ -684,8 +706,7 @@ class EnemyFactory():
                               hitbox,
                               ((10, 0), (0, 0), (-10, 0)),
                               250)
-
-        elif difficulty_range <= 80:
+        elif difficulty_range <= 75:
 
             random_number = randint(0, 2)
 
@@ -787,6 +808,7 @@ class EnemyFactory():
                               hitbox,
                               ((10, 0), (0, 0), (-10, 0)),
                               750)
+
         return enemy
 
 
@@ -816,7 +838,7 @@ class Entity():
     hitbox: Hitbox
     sprite: CustomSprite
 
-    def __init__(self, position, drag, size, sprite_path, angle, hitbox):
+    def __init__(self, position, drag, size, animate, sprite_path, angle, hitbox):
 
         self.active = True
         self.position = list(position)
@@ -829,11 +851,21 @@ class Entity():
 
             self.hitbox = hitbox
 
-        self.sprite = CustomSprite((self.position[0] - size[0] / 2,
-                                    self.position[1] - size[1] / 2),
-                                   size,
-                                   sprite_path,
-                                   angle=angle)
+        self.sprite = None
+
+        if animate:
+
+            self.sprite = CustomAnimatedSprite((self.position[0] - size[0] / 2,
+                                                self.position[1] - size[1] / 2),
+                                               size,
+                                               sprite_path)
+        else:
+
+            self.sprite = CustomSprite((self.position[0] - size[0] / 2,
+                                        self.position[1] - size[1] / 2),
+                                    size,
+                                    sprite_path,
+                                    angle=angle)
 
     def get_position(self):
         '''
@@ -954,7 +986,7 @@ class Aircraft(Entity):
                  hitbox,
                  gun_points):
 
-        super().__init__(position, drag, size, sprite_path, angle, hitbox)
+        super().__init__(position, drag, size, False, sprite_path, angle, hitbox)
 
         self.direction = [0, 0]
         self.life = max_life  # Todas as entidades são instanciadas com a vida cheia
@@ -1395,7 +1427,7 @@ class Bullet(Entity):
 
     def __init__(self, position, size, sprite_path, hitbox, friendly, damage):
 
-        super().__init__(position, 0.0, size, sprite_path, 0, hitbox)
+        super().__init__(position, 0.0, size, False, sprite_path, 0, hitbox)
 
         self.friendly = friendly
         self.damage = damage
@@ -1446,7 +1478,7 @@ class Cloud(Entity):
 
     def __init__(self, position, size, sprite_path, angle, constant_speed):
 
-        super().__init__(position, 0.0, size, sprite_path, angle, None)
+        super().__init__(position, 0.0, size, False, sprite_path, angle, None)
 
         self.velocity[1] = constant_speed
 
@@ -1459,3 +1491,27 @@ class Cloud(Entity):
 
             self.set_position((randint(0, screen_size[0]),
                                randint(-screen_size[1], -screen_size[1] // 2)))
+
+
+class Explosion(Entity):
+
+    '''
+    Entidade que representa uma explosão, ela é usada apenas para fins visuais.
+    '''
+
+    def __init__(self, position, size, sprite_path):
+
+        super().__init__(position, 0.0, size, True, sprite_path, 0, None)
+
+        self.sprite.start_animation()
+
+    def behaviour(self):
+        '''
+        Comportamento da explosão
+        '''
+
+        self.sprite.animate_frame()
+
+        if not self.sprite.is_animating():
+
+            self.active = False
