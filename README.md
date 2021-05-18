@@ -91,3 +91,7 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 # 0.11 - 18/05/2021
 
 * Tipos de balas diferentes adicionadas.
+
+# 0.12 - 18/05/2021
+
+* Agora o jogo pode ser reiniciado e jogado novamente.

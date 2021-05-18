@@ -75,7 +75,7 @@ class GameManager():
 
         screen_size = (self.display.get_width(), self.display.get_height())
 
-        self.entities = EntityManager(screen_size, 100, 25)
+        self.entities = EntityManager(screen_size, 100, 10)
         self.physics = PhysicsManager()
         self.graphics = GraphicsManager((92, 184, 230))
         self.user_interface = UserInterfaceManager(screen_size, version)
@@ -167,14 +167,12 @@ class GameManager():
                         # Tocar o áudio do botão aqui
                     elif event == Event.UI_RESTART:
 
-                        # Resetar o gameplay aqui
-
+                        self.entities.reset()
                         self.state = State.GAMEPLAY
                         # Tocar o áudio do botão aqui
                     elif event == Event.GP_GAMEOVER:
 
-                        # Operações finais aqui
-
+                        self.entities.reset()
                         self.state = State.GAMEOVER
 
                     break

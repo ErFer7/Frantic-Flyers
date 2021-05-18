@@ -49,7 +49,7 @@ class EntityManager():
                              100,
                              100.0,
                              10.0,
-                             BulletType.TRIPLE_IN_ANGLE,
+                             BulletType.SIMPLE,
                              1.0,
                              1.0,
                              0.25,
@@ -69,7 +69,7 @@ class EntityManager():
         self.inactive_bullets_limit = inactive_bullets_limit
         self.enemies_limit = enemies_limit
         self.enemy_factory = EnemyFactory(self.screen_size, 300.0)
-        self.elapsed_time = 1.0
+        self.elapsed_time = 0.0
         self.event = None
 
         self.generate_clouds(10)
@@ -392,7 +392,7 @@ class EntityManager():
         Gera os inimigos.
         '''
 
-        enemy_count = 1 + int(self.elapsed_time / 20)
+        enemy_count = 1 + int(self.elapsed_time / 30)
 
         if enemy_count > self.enemies_limit:
 
@@ -405,6 +405,17 @@ class EntityManager():
             if enemy is not None:
 
                 self.enemies.append(enemy)
+
+    def reset(self):
+        '''
+        Redefine todas as entidades.
+        '''
+
+        self.score = 0
+        self.player.reset((self.screen_size[0] / 2, self.screen_size[1] / 2))
+        self.enemies.clear()
+        self.bullets.clear()
+        self.elapsed_time = 0.0
 
     def update(self, state, events, tick):
         '''
@@ -424,6 +435,7 @@ class EntityManager():
                                 self.player.get_bullet_type(),
                                 True,
                                 self.player.get_damage(self.player.get_damage_modifier()))
+
                 self.player.set_fire_state(False)
 
             if not self.player.is_active():
@@ -450,10 +462,10 @@ class EntityManager():
                 if enemy.is_attacking() and enemy.is_ready():
 
                     self.generate_shot(enemy.get_position(),
-                                    enemy.get_gun_points(),
-                                    enemy.get_bullet_type(),
-                                    False,
-                                    enemy.get_damage())
+                                       enemy.get_gun_points(),
+                                       enemy.get_bullet_type(),
+                                       False,
+                                       enemy.get_damage())
                     enemy.set_fire_state(False)
 
                 if not enemy.is_active():
@@ -589,6 +601,56 @@ class EnemyFactory():
                               hitbox,
                               ((10, 0), (0, 0), (-10, 0)),
                               100)
+        elif difficulty_range <= 30:
+
+            random_number = randint(0, 2)
+
+            if random_number == 0:
+
+                hitbox = Hitbox(position,
+                                (0, -12, 35, 120),
+                                (0, 5, 125, 35))
+
+                enemy = Enemy(position,
+                              drag,
+                              150,
+                              80.0,
+                              18.0,
+                              BulletType.SIMPLE,
+                              0.75,
+                              1.2,
+                              stun_time,
+                              '',  # Som
+                              '',  # Som
+                              size,
+                              os.path.join("Sprites", "Planes", "JAP_Ki21.png"),
+                              angle,
+                              hitbox,
+                              ((10, 0), (0, 0), (-10, 0)),
+                              300)
+            else:
+
+                hitbox = Hitbox(position,
+                                (0, -12, 35, 120),
+                                (0, 5, 125, 35))
+
+                enemy = Enemy(position,
+                              drag,
+                              120,
+                              100.0,
+                              12.0,
+                              BulletType.SIMPLE,
+                              1.0,
+                              1.0,
+                              stun_time,
+                              '',  # Som
+                              '',  # Som
+                              size,
+                              os.path.join("Sprites", "Planes", "US_a26.png"),
+                              angle,
+                              hitbox,
+                              ((10, 0), (0, 0), (-10, 0)),
+                              300)
 
         return enemy
 
@@ -1035,6 +1097,15 @@ class Player(Aircraft):
 
         return self.armor_modifier
 
+    def reset(self, position):
+        '''
+        Redefine o jogador.
+        '''
+
+        self.life = self.max_life
+        self.velocity = [0, 0]
+        self.position = list(position)
+        self.direction = [0, 0]
 
 class Enemy(Aircraft):
 

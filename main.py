@@ -11,15 +11,15 @@ Para fazer:
 * Sistema de entidades
     * Fábrica de inimigos
     * Pontos de modificação calculados
+    * Obtenção dos tipos de tiro
 * Sistema gráfico
     * Animações
 * Som e música
-* Polir o jogo e consertar tudo
 '''
 
 from game_system import GameManager
 
-VERSION = "v0.11"
+VERSION = "v0.12"
 
 game_manager = GameManager(VERSION)
 game_manager.run_game(60)
