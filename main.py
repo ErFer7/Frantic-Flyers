@@ -9,7 +9,7 @@ Projeto: Frantic Flyers.
 
 from game_system import GameManager
 
-VERSION = "v1.0"
+VERSION = "v1.0.1"
 
 game_manager = GameManager(VERSION)  # Instancia o jogo
 game_manager.run_game(60)  # Roda o jogo
