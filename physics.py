@@ -63,8 +63,8 @@ class PhysicsManager():
 
                 if collided:
 
-                    enemy.change_life(-10)
-                    player.change_life(-10, player.get_armor_modifier())
+                    enemy.change_life(-15)
+                    player.change_life(-15, player.get_armor_modifier())
 
             for bullet in bullets:
 

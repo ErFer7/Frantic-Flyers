@@ -63,8 +63,7 @@ class EntityManager():
                              (300, 300),
                              os.path.join("Sprites", "Planes", "UK_Spitfire.png"),
                              0,
-                             player_hitbox,
-                             ((-28, 0), (0, 0), (28, 0)))
+                             player_hitbox)
 
         self.enemies = []
         self.bullets = []
@@ -140,7 +139,7 @@ class EntityManager():
 
             self.clouds.sort(key=lambda cloud: cloud.size[0], reverse=True)
 
-    def generate_shot(self, position, gun_points, bullet_type, friendly, damage):
+    def generate_shot(self, position, bullet_type, friendly, damage):
         '''
         Gera o tiro.
         '''
@@ -156,13 +155,10 @@ class EntityManager():
 
         if bullet_type == BulletType.SIMPLE:
 
-            position_x = gun_points[1][0] + position[0]
-            position_y = gun_points[1][1] + position[1]
-
             if len(self.inactive_bullets) > 0:
 
                 bullet = self.inactive_bullets[0]
-                bullet.shoot((position_x, position_y), (0.0, velocity), friendly, damage)
+                bullet.shoot((position[0], position[1]), (0.0, velocity), friendly, damage)
                 self.bullets.append(bullet)
                 self.inactive_bullets.remove(bullet)
             else:
@@ -173,27 +169,24 @@ class EntityManager():
                                 None,
                                 friendly,
                                 damage)
-                bullet.shoot((position_x, position_y), (0.0, velocity), friendly, damage)
+                bullet.shoot((position[0], position[1]), (0.0, velocity), friendly, damage)
                 self.bullets.append(bullet)
         elif bullet_type == BulletType.DOUBLE:
 
-            position_x_left = gun_points[0][0] + position[0]
-            position_y_left = gun_points[0][1] + position[1]
-
-            position_x_right = gun_points[2][0] + position[0]
-            position_y_right = gun_points[2][1] + position[1]
+            position_x_0 = position[0] - 30
+            position_x_1 = position[0] + 30
 
             if len(self.inactive_bullets) > 1:
 
                 bullet_left = self.inactive_bullets[0]
                 bullet_right = self.inactive_bullets[1]
 
-                bullet_left.shoot((position_x_left, position_y_left),
+                bullet_left.shoot((position_x_0, position[1]),
                                   (0.0, velocity),
                                   friendly,
                                   damage)
 
-                bullet_right.shoot((position_x_right, position_y_right),
+                bullet_right.shoot((position_x_1, position[1]),
                                    (0.0, velocity),
                                    friendly,
                                    damage)
@@ -219,12 +212,12 @@ class EntityManager():
                                       friendly,
                                       damage)
 
-                bullet_left.shoot((position_x_left, position_y_left),
+                bullet_left.shoot((position_x_0, position[1]),
                                   (0.0, velocity),
                                   friendly,
                                   damage)
 
-                bullet_right.shoot((position_x_right, position_y_right),
+                bullet_right.shoot((position_x_1, position[1]),
                                    (0.0, velocity),
                                    friendly,
                                    damage)
@@ -233,14 +226,8 @@ class EntityManager():
                 self.bullets.append(bullet_right)
         elif bullet_type == BulletType.TRIPLE:
 
-            position_x_left = gun_points[0][0] + position[0]
-            position_y_left = gun_points[0][1] + position[1]
-
-            position_x_center = gun_points[1][0] + position[0]
-            position_y_center = gun_points[1][1] + position[1]
-
-            position_x_right = gun_points[2][0] + position[0]
-            position_y_right = gun_points[2][1] + position[1]
+            position_x_0 = position[0] - 28
+            position_x_1 = position[0] + 28
 
             if len(self.inactive_bullets) > 2:
 
@@ -248,17 +235,17 @@ class EntityManager():
                 bullet_center = self.inactive_bullets[1]
                 bullet_right = self.inactive_bullets[2]
 
-                bullet_left.shoot((position_x_left, position_y_left),
+                bullet_left.shoot((position_x_0, position[1]),
                                   (0.0, velocity),
                                   friendly,
                                   damage)
 
-                bullet_center.shoot((position_x_center, position_y_center),
+                bullet_center.shoot((position[0], position[1]),
                                     (0.0, velocity),
                                     friendly,
                                     damage)
 
-                bullet_right.shoot((position_x_right, position_y_right),
+                bullet_right.shoot((position_x_1, position[1]),
                                    (0.0, velocity),
                                    friendly,
                                    damage)
@@ -294,17 +281,17 @@ class EntityManager():
                                       friendly,
                                       damage)
 
-                bullet_left.shoot((position_x_left, position_y_left),
+                bullet_left.shoot((position_x_0, position[1]),
                                   (0.0, velocity),
                                   friendly,
                                   damage)
 
-                bullet_center.shoot((position_x_center, position_y_center),
+                bullet_center.shoot((position[0], position[1]),
                                     (0.0, velocity),
                                     friendly,
                                     damage)
 
-                bullet_right.shoot((position_x_right, position_y_right),
+                bullet_right.shoot((position_x_1, position[1]),
                                    (0.0, velocity),
                                    friendly,
                                    damage)
@@ -314,14 +301,8 @@ class EntityManager():
                 self.bullets.append(bullet_right)
         else:
 
-            position_x_left = gun_points[0][0] + position[0]
-            position_y_left = gun_points[0][1] + position[1]
-
-            position_x_center = gun_points[1][0] + position[0]
-            position_y_center = gun_points[1][1] + position[1]
-
-            position_x_right = gun_points[2][0] + position[0]
-            position_y_right = gun_points[2][1] + position[1]
+            position_x_0 = position[0] - 28
+            position_x_1 = position[0] + 28
 
             if len(self.inactive_bullets) > 2:
 
@@ -329,17 +310,17 @@ class EntityManager():
                 bullet_center = self.inactive_bullets[1]
                 bullet_right = self.inactive_bullets[2]
 
-                bullet_left.shoot((position_x_left, position_y_left),
+                bullet_left.shoot((position_x_0, position[1]),
                                   (-velocity, velocity),
                                   friendly,
                                   damage)
 
-                bullet_center.shoot((position_x_center, position_y_center),
+                bullet_center.shoot((position[0], position[1]),
                                     (0.0, velocity),
                                     friendly,
                                     damage)
 
-                bullet_right.shoot((position_x_right, position_y_right),
+                bullet_right.shoot((position_x_1, position[1]),
                                    (velocity, velocity),
                                    friendly,
                                    damage)
@@ -375,17 +356,17 @@ class EntityManager():
                                       friendly,
                                       damage)
 
-                bullet_left.shoot((position_x_left, position_y_left),
+                bullet_left.shoot((position_x_0, position[1]),
                                   (-velocity, velocity),
                                   friendly,
                                   damage)
 
-                bullet_center.shoot((position_x_center, position_y_center),
+                bullet_center.shoot((position[0], position[1]),
                                     (0.0, velocity),
                                     friendly,
                                     damage)
 
-                bullet_right.shoot((position_x_right, position_y_right),
+                bullet_right.shoot((position_x_1, position[1]),
                                    (velocity, velocity),
                                    friendly,
                                    damage)
@@ -422,6 +403,7 @@ class EntityManager():
         self.player.reset((self.screen_size[0] / 2, self.screen_size[1] / 2))
         self.enemies.clear()
         self.bullets.clear()
+        self.animations.clear()
         self.elapsed_time = 0.0
 
     def update(self, state, events, tick):
@@ -438,7 +420,6 @@ class EntityManager():
             if self.player.is_attacking() and self.player.is_ready():
 
                 self.generate_shot(self.player.get_position(),
-                                   self.player.get_gun_points(),
                                    self.player.get_bullet_type(),
                                    True,
                                    self.player.get_damage(self.player.get_damage_modifier()))
@@ -476,7 +457,6 @@ class EntityManager():
                 if enemy.is_attacking() and enemy.is_ready():
 
                     self.generate_shot(enemy.get_position(),
-                                       enemy.get_gun_points(),
                                        enemy.get_bullet_type(),
                                        False,
                                        enemy.get_damage())
@@ -593,7 +573,6 @@ class EnemyFactory():
                               os.path.join("Sprites", "Planes", "GER_bf109.png"),
                               angle,
                               hitbox,
-                              ((10, 0), (0, 0), (-10, 0)),
                               100)
             elif random_number < 66:
 
@@ -607,7 +586,7 @@ class EnemyFactory():
                               100.0,
                               10.0,
                               BulletType.SIMPLE,
-                              1.0,
+                              1.25,
                               1.0,
                               stun_time,
                               '',  # Som
@@ -616,7 +595,6 @@ class EnemyFactory():
                               os.path.join("Sprites", "Planes", "JAP_a6m.png"),
                               angle,
                               hitbox,
-                              ((10, 0), (0, 0), (-10, 0)),
                               100)
             elif random_number < 98:
 
@@ -630,7 +608,7 @@ class EnemyFactory():
                               100.0,
                               10.0,
                               BulletType.SIMPLE,
-                              1.0,
+                              1.5,
                               1.0,
                               stun_time,
                               '',  # Som
@@ -639,7 +617,6 @@ class EnemyFactory():
                               os.path.join("Sprites", "Planes", "US_p40.png"),
                               angle,
                               hitbox,
-                              ((10, 0), (0, 0), (-10, 0)),
                               100)
             else: # Avião para pontos extras
 
@@ -662,7 +639,6 @@ class EnemyFactory():
                               os.path.join("Sprites", "Planes", "USSR_Lagg3.png"),
                               angle,
                               hitbox,
-                              ((10, 0), (0, 0), (-10, 0)),
                               1000)
         elif difficulty_range <= 50:
 
@@ -680,8 +656,8 @@ class EnemyFactory():
                               100.0,
                               12.0,
                               BulletType.SIMPLE,
-                              1.0,
-                              1.2,
+                              2.0,
+                              5.0,
                               stun_time,
                               '',  # Som
                               '',  # Som
@@ -689,9 +665,7 @@ class EnemyFactory():
                               os.path.join("Sprites", "Planes", "GER_bf110.png"),
                               angle,
                               hitbox,
-                              ((10, 0), (0, 0), (-10, 0)),
                               250)
-
             else:
 
                 hitbox = Hitbox(position,
@@ -705,7 +679,7 @@ class EnemyFactory():
                               12.0,
                               BulletType.SIMPLE,
                               0.9,
-                              1.0,
+                              5.0,
                               stun_time,
                               '',  # Som
                               '',  # Som
@@ -713,7 +687,6 @@ class EnemyFactory():
                               os.path.join("Sprites", "Planes", "GER_He111.png"),
                               angle,
                               hitbox,
-                              ((10, 0), (0, 0), (-10, 0)),
                               250)
         elif difficulty_range <= 75:
 
@@ -730,7 +703,7 @@ class EnemyFactory():
                               200,
                               80.0,
                               18.0,
-                              BulletType.SIMPLE,
+                              BulletType.DOUBLE,
                               0.75,
                               1.5,
                               stun_time,
@@ -740,9 +713,7 @@ class EnemyFactory():
                               os.path.join("Sprites", "Planes", "JAP_Ki21.png"),
                               angle,
                               hitbox,
-                              ((10, 0), (0, 0), (-10, 0)),
                               500)
-
             else:
 
                 hitbox = Hitbox(position,
@@ -754,7 +725,7 @@ class EnemyFactory():
                               150,
                               100.0,
                               13.0,
-                              BulletType.SIMPLE,
+                              BulletType.DOUBLE,
                               1.1,
                               1.2,
                               stun_time,
@@ -764,7 +735,6 @@ class EnemyFactory():
                               os.path.join("Sprites", "Planes", "US_a26.png"),
                               angle,
                               hitbox,
-                              ((10, 0), (0, 0), (-10, 0)),
                               500)
         else:
 
@@ -781,7 +751,7 @@ class EnemyFactory():
                               500,
                               50.0,
                               24.0,
-                              BulletType.SIMPLE,
+                              BulletType.TRIPLE,
                               0.75,
                               1.3,
                               stun_time,
@@ -791,9 +761,7 @@ class EnemyFactory():
                               os.path.join("Sprites", "Planes", "US_b17.png"),
                               angle,
                               hitbox,
-                              ((10, 0), (0, 0), (-10, 0)),
                               750)
-
             else:
 
                 hitbox = Hitbox(position,
@@ -805,7 +773,7 @@ class EnemyFactory():
                               777,
                               40.0,
                               30.0,
-                              BulletType.SIMPLE,
+                              BulletType.TRIPLE,
                               1.0,
                               1.5,
                               stun_time,
@@ -815,7 +783,6 @@ class EnemyFactory():
                               os.path.join("Sprites", "Planes", "UK_Lancaster.png"),
                               angle,
                               hitbox,
-                              ((10, 0), (0, 0), (-10, 0)),
                               750)
 
         return enemy
@@ -1022,7 +989,6 @@ class Aircraft(Entity):
     attacking: bool
     destroyed: bool
     damaged: bool
-    gun_points: list
     attack_sound: pygame.mixer.Sound
     damage_sound: pygame.mixer.Sound
 
@@ -1041,8 +1007,7 @@ class Aircraft(Entity):
                  size,
                  sprite_path,
                  angle,
-                 hitbox,
-                 gun_points):
+                 hitbox):
 
         super().__init__(position, drag, size, False, sprite_path, angle, hitbox)
 
@@ -1063,7 +1028,6 @@ class Aircraft(Entity):
         self.attacking = False
         self.destroyed = False
         self.damaged = False
-        self.gun_points = list(gun_points)
         # self.attack_sound = pygame.mixer.Sound() --som do tiro
         # self.damage_sound = pygame.mixer.Sound() --som quando a nave leva dano
 
@@ -1148,13 +1112,6 @@ class Aircraft(Entity):
 
         self.fire_ready = ready
 
-    def get_gun_points(self):
-        '''
-        Retorna o offset das posições das armas.
-        '''
-
-        return self.gun_points
-
     def get_bullet_type(self):
         '''
         Retorna o tipo de bala.
@@ -1208,8 +1165,7 @@ class Player(Aircraft):
                  size,
                  sprite_path,
                  angle,
-                 hitbox,
-                 gun_points):
+                 hitbox):
 
         super().__init__(position,
                          drag,
@@ -1225,8 +1181,7 @@ class Player(Aircraft):
                          size,
                          sprite_path,
                          angle,
-                         hitbox,
-                         gun_points)
+                         hitbox)
 
         self.velocity_modifier = 0
         self.damage_modifier = 0
@@ -1385,7 +1340,6 @@ class Enemy(Aircraft):
                  sprite_path,
                  angle,
                  hitbox,
-                 gun_points,
                  score_value):
 
         super().__init__(position,
@@ -1402,8 +1356,7 @@ class Enemy(Aircraft):
                          size,
                          sprite_path,
                          angle,
-                         hitbox,
-                         gun_points)
+                         hitbox)
 
         self.score_value = score_value
 

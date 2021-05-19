@@ -36,15 +36,6 @@ class GraphicsManager():
                 self.render_group.add(entity.get_sprite())
 
             self.render_group.draw(display)
-
-            # DEBUG
-            for entity in entities:
-
-                if entity.get_hitbox() is not None:
-
-                    for rect in entity.get_hitbox():
-
-                        pygame.draw.rect(display, (255, 0, 0), rect, 1)
             self.render_group.empty()
 
 
