@@ -486,8 +486,6 @@ class MainMenu(UserInterface):
     Define o menu.
     '''
 
-    background: Background  # Plano de fundo
-
     def __init__(self, screen_size, version, background_color):
 
         super().__init__((0, 0), screen_size, screen_size, background_color)
@@ -553,8 +551,6 @@ class ModificationMenu(UserInterface):
     '''
     Define o menu de modificação.
     '''
-
-    background: Background  # Plano de fundo
 
     def __init__(self, screen_size, background_color):
 
