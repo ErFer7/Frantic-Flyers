@@ -57,9 +57,8 @@ class EntityManager():
                              1.0,
                              1.0,
                              0.25,
-                             '',  # Som
-                             '',  # Som
-                             '',  # Som
+                             os.path.join("Audio", "SFX", "Gun 4.wav"),
+                             os.path.join("Audio", "SFX", "Damage.wav"),
                              (300, 300),
                              os.path.join("Sprites", "Planes", "UK_Spitfire.png"),
                              0,
@@ -73,7 +72,13 @@ class EntityManager():
         self.inactive_bullets_limit = inactive_bullets_limit
         self.enemies_limit = enemies_limit
         self.small_animation_limit = small_animation_limit
-        self.enemy_factory = EnemyFactory(self.screen_size, 300.0)
+        self.enemy_factory = EnemyFactory(self.screen_size,
+                                          300.0,
+                                          1.0,
+                                          0.25,
+                                          (300, 300),
+                                          180,
+                                          os.path.join("Audio", "SFX", "Damage.wav"))
         self.animation_factory = AnimationFactory()
         self.elapsed_time = 0.0
         self.event = None
@@ -425,6 +430,7 @@ class EntityManager():
                                    self.player.get_damage(self.player.get_damage_modifier()))
 
                 self.player.set_fire_state(False)
+                self.player.play_shot_sound()
 
             if self.player.is_damaged():
 
@@ -432,6 +438,8 @@ class EntityManager():
 
                     self.animations.append(self.animation_factory.generate_explosion(
                         self.player.get_position(), True))
+
+                self.player.play_damage_sound()
 
             if not self.player.is_active():
 
@@ -460,7 +468,9 @@ class EntityManager():
                                        enemy.get_bullet_type(),
                                        False,
                                        enemy.get_damage())
+
                     enemy.set_fire_state(False)
+                    enemy.play_shot_sound()
 
                 if enemy.is_damaged():
 
@@ -468,6 +478,8 @@ class EntityManager():
 
                         self.animations.append(
                             self.animation_factory.generate_explosion(enemy.get_position(), True))
+
+                    enemy.play_damage_sound()
 
                 if not enemy.is_active():
 
@@ -514,11 +526,21 @@ class EnemyFactory():
 
     screen_size: tuple
     max_difficulty: float
+    drag: float
+    stun_time: float
+    size: tuple
+    angle: int
+    damage_sound: str
 
-    def __init__(self, scree_size, max_difficulty):
+    def __init__(self, scree_size, max_difficulty, drag, stun_time, size, angle, damage_sound):
 
         self.screen_size = scree_size
         self.max_difficulty = max_difficulty
+        self.drag = drag
+        self.stun_time = stun_time
+        self.size = size
+        self.angle = angle
+        self.damage_sound = damage_sound
 
     def generate_enemy(self, difficulty):
         '''
@@ -537,11 +559,6 @@ class EnemyFactory():
 
         position = choice(spawn_positions)
 
-        drag = 1.0
-        stun_time = 0.25
-        size = (300, 300)
-        angle = 180
-
         if difficulty > self.max_difficulty:
 
             difficulty = self.max_difficulty
@@ -559,19 +576,19 @@ class EnemyFactory():
                                 (0, 5, 125, 35))
 
                 enemy = Enemy(position,
-                              drag,
+                              self.drag,
                               80,
                               100.0,
                               10.0,
                               BulletType.SIMPLE,
                               1.0,
                               1.0,
-                              stun_time,
-                              '',  # Som
-                              '',  # Som
-                              size,
+                              self.stun_time,
+                              os.path.join("Audio", "SFX", "Gun 3.wav"),
+                              self.damage_sound,
+                              self.size,
                               os.path.join("Sprites", "Planes", "GER_bf109.png"),
-                              angle,
+                              self.angle,
                               hitbox,
                               100)
             elif random_number < 66:
@@ -581,19 +598,19 @@ class EnemyFactory():
                                 (0, 5, 125, 35))
 
                 enemy = Enemy(position,
-                              drag,
+                              self.drag,
                               80,
                               100.0,
                               10.0,
                               BulletType.SIMPLE,
                               1.25,
                               1.0,
-                              stun_time,
-                              '',  # Som
-                              '',  # Som
-                              size,
+                              self.stun_time,
+                              os.path.join("Audio", "SFX", "Gun 3.wav"),
+                              self.damage_sound,
+                              self.size,
                               os.path.join("Sprites", "Planes", "JAP_a6m.png"),
-                              angle,
+                              self.angle,
                               hitbox,
                               100)
             elif random_number < 98:
@@ -603,41 +620,41 @@ class EnemyFactory():
                                 (0, 5, 125, 35))
 
                 enemy = Enemy(position,
-                              drag,
+                              self.drag,
                               80,
                               100.0,
                               10.0,
                               BulletType.SIMPLE,
                               1.5,
                               1.0,
-                              stun_time,
-                              '',  # Som
-                              '',  # Som
-                              size,
+                              self.stun_time,
+                              os.path.join("Audio", "SFX", "Gun 3.wav"),
+                              self.damage_sound,
+                              self.size,
                               os.path.join("Sprites", "Planes", "US_p40.png"),
-                              angle,
+                              self.angle,
                               hitbox,
                               100)
-            else: # Avião para pontos extras
+            else:  # Avião para pontos extras
 
                 hitbox = Hitbox(position,
                                 (0, -12, 35, 120),
                                 (0, 5, 125, 35))
 
                 enemy = Enemy(position,
-                              drag,
+                              self.drag,
                               10,
                               200.0,
                               1.0,
                               BulletType.SIMPLE,
                               0.1,
                               0.1,
-                              stun_time,
-                              '',  # Som
-                              '',  # Som
-                              size,
+                              self.stun_time,
+                              os.path.join("Audio", "SFX", "Gun 3.wav"),
+                              self.damage_sound,
+                              self.size,
                               os.path.join("Sprites", "Planes", "USSR_Lagg3.png"),
-                              angle,
+                              self.angle,
                               hitbox,
                               1000)
         elif difficulty_range <= 50:
@@ -651,19 +668,19 @@ class EnemyFactory():
                                 (0, 15, 165, 35))
 
                 enemy = Enemy(position,
-                              drag,
+                              self.drag,
                               120,
                               100.0,
                               12.0,
                               BulletType.SIMPLE,
                               2.0,
                               5.0,
-                              stun_time,
-                              '',  # Som
-                              '',  # Som
-                              size,
+                              self.stun_time,
+                              os.path.join("Audio", "SFX", "Gun 1.ogg"),
+                              self.damage_sound,
+                              self.size,
                               os.path.join("Sprites", "Planes", "GER_bf110.png"),
-                              angle,
+                              self.angle,
                               hitbox,
                               250)
             else:
@@ -673,19 +690,19 @@ class EnemyFactory():
                                 (0, 20, 200, 40))
 
                 enemy = Enemy(position,
-                              drag,
+                              self.drag,
                               150,
                               90.0,
                               12.0,
                               BulletType.SIMPLE,
                               0.9,
                               5.0,
-                              stun_time,
-                              '',  # Som
-                              '',  # Som
-                              size,
+                              self.stun_time,
+                              os.path.join("Audio", "SFX", "Gun 2.ogg"),
+                              self.damage_sound,
+                              self.size,
                               os.path.join("Sprites", "Planes", "GER_He111.png"),
-                              angle,
+                              self.angle,
                               hitbox,
                               250)
         elif difficulty_range <= 75:
@@ -699,19 +716,19 @@ class EnemyFactory():
                                 (0, 5, 210, 40))
 
                 enemy = Enemy(position,
-                              drag,
+                              self.drag,
                               200,
                               80.0,
                               18.0,
                               BulletType.DOUBLE,
                               0.75,
                               1.5,
-                              stun_time,
-                              '',  # Som
-                              '',  # Som
-                              size,
+                              self.stun_time,
+                              os.path.join("Audio", "SFX", "Gun 2.ogg"),
+                              self.damage_sound,
+                              self.size,
                               os.path.join("Sprites", "Planes", "JAP_Ki21.png"),
-                              angle,
+                              self.angle,
                               hitbox,
                               500)
             else:
@@ -721,19 +738,19 @@ class EnemyFactory():
                                 (0, 12, 215, 35))
 
                 enemy = Enemy(position,
-                              drag,
+                              self.drag,
                               150,
                               100.0,
                               13.0,
                               BulletType.DOUBLE,
                               1.1,
                               1.2,
-                              stun_time,
-                              '',  # Som
-                              '',  # Som
-                              size,
+                              self.stun_time,
+                              os.path.join("Audio", "SFX", "Gun 1.ogg"),
+                              self.damage_sound,
+                              self.size,
                               os.path.join("Sprites", "Planes", "US_a26.png"),
-                              angle,
+                              self.angle,
                               hitbox,
                               500)
         else:
@@ -747,19 +764,19 @@ class EnemyFactory():
                                 (0, 18, 295, 50))
 
                 enemy = Enemy(position,
-                              drag,
+                              self.drag,
                               500,
                               50.0,
                               24.0,
                               BulletType.TRIPLE,
                               0.75,
                               1.3,
-                              stun_time,
-                              '',  # Som
-                              '',  # Som
-                              size,
+                              self.stun_time,
+                              os.path.join("Audio", "SFX", "Gun 5.wav"),
+                              self.damage_sound,
+                              self.size,
                               os.path.join("Sprites", "Planes", "US_b17.png"),
-                              angle,
+                              self.angle,
                               hitbox,
                               750)
             else:
@@ -769,19 +786,19 @@ class EnemyFactory():
                                 (0, 18, 295, 50))
 
                 enemy = Enemy(position,
-                              drag,
+                              self.drag,
                               777,
                               40.0,
                               30.0,
                               BulletType.TRIPLE,
                               1.0,
                               1.5,
-                              stun_time,
-                              '',  # Som
-                              '',  # Som
-                              size,
+                              self.stun_time,
+                              os.path.join("Audio", "SFX", "Gun 5.wav"),
+                              self.damage_sound,
+                              self.size,
                               os.path.join("Sprites", "Planes", "UK_Lancaster.png"),
-                              angle,
+                              self.angle,
                               hitbox,
                               750)
 
@@ -823,6 +840,7 @@ class AnimationFactory():
         '''
 
         size = (300, 300)
+        path = None
 
         index = 0
 
@@ -832,8 +850,9 @@ class AnimationFactory():
         else:
 
             index = randint(3, 4)
+            path = os.path.join("Audio", "SFX", "Explosion.wav")
 
-        return Explosion(position, size, self.path_lists[index])
+        return Explosion(position, size, self.path_lists[index], path)
 
 
 class BulletType(Enum):
@@ -1016,9 +1035,8 @@ class Aircraft(Entity):
         self.max_life = max_life
         self.speed = speed
         self.damage = damage
-        # integer que diz como o tiro sai do avião, vai de 0 até um número
         self.bullet_type = bullet_type
-        self.firerate = firerate  # cadencia de tiros
+        self.firerate = firerate
         self.firerate_cooldown = 0.0
         self.fire_ready = True
         self.armor = armor
@@ -1028,10 +1046,10 @@ class Aircraft(Entity):
         self.attacking = False
         self.destroyed = False
         self.damaged = False
-        # self.attack_sound = pygame.mixer.Sound() --som do tiro
-        # self.damage_sound = pygame.mixer.Sound() --som quando a nave leva dano
+        self.attack_sound = pygame.mixer.Sound(attack_sound)
+        self.damage_sound = pygame.mixer.Sound(damage_sound)
 
-    def change_life(self, value, armor_modifier=0.0):
+    def change_life(self, value, stun=False, armor_modifier=0.0):
         '''
         Aplica o dano
         '''
@@ -1041,7 +1059,10 @@ class Aircraft(Entity):
             if not self.stunned:
 
                 self.life += int(value * (1.0 / (self.armor + armor_modifier / 100.0)))
-                self.stunned = True
+
+                if stun:
+
+                    self.stunned = True
                 self.damaged = True
         else:
 
@@ -1136,6 +1157,20 @@ class Aircraft(Entity):
 
         return damaged
 
+    def play_shot_sound(self):
+        '''
+        Toca o som de tiro.
+        '''
+
+        self.attack_sound.play(maxtime=600)
+
+    def play_damage_sound(self):
+        '''
+        Toca o som de dano.
+        '''
+
+        self.damage_sound.play(maxtime=600)
+
 
 class Player(Aircraft):
 
@@ -1161,7 +1196,6 @@ class Player(Aircraft):
                  stun_time,
                  attack_sound,
                  damage_sound,
-                 idle_sound,
                  size,
                  sprite_path,
                  angle,
@@ -1187,7 +1221,6 @@ class Player(Aircraft):
         self.damage_modifier = 0
         self.firerate_modifier = 0
         self.armor_modifier = 0
-        #self.idle_sound = pygame.mixer.Sound(idle_sound)
 
     def behaviour(self, events, screen_size, tick):
         '''
@@ -1421,7 +1454,7 @@ class Enemy(Aircraft):
         elif (player_position[0] - self.position[0]) > 100:
 
             self.attacking = False
-        else:
+        elif self.position[1] > 0:
 
             self.attacking = True
 
@@ -1522,11 +1555,15 @@ class Explosion(Entity):
     Entidade que representa uma explosão, ela é usada apenas para fins visuais.
     '''
 
-    def __init__(self, position, size, sprite_path):
+    def __init__(self, position, size, sprite_path, sound=None):
 
         super().__init__(position, 0.0, size, True, sprite_path, 0, None)
 
         self.sprite.start_animation()
+
+        if sound is not None:
+
+            pygame.mixer.Sound(sound).play(maxtime=2000)
 
     def behaviour(self):
         '''

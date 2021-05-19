@@ -26,6 +26,7 @@ class UserInterfaceManager():
     gameplay_interface: None
     pause_interface: None
     gameover_interface: None
+    sound: pygame.mixer.Sound
 
     def __init__(self, screen_size, version):
 
@@ -35,6 +36,7 @@ class UserInterfaceManager():
         self.gameplay_interface = GameplayInterface(screen_size, (0, 0, 0, 0))
         self.pause_interface = PauseInterface(screen_size, (92, 184, 230))
         self.gameover_interface = GameoverInterface(screen_size, (92, 184, 230))
+        self.sound = pygame.mixer.Sound(os.path.join("Audio", "SFX", "Selection.wav"))
 
     def update(self, state, display, events, modification_data, score, life):
         '''
@@ -92,6 +94,13 @@ class UserInterfaceManager():
         '''
 
         return self.user_interface_event
+
+    def play_sound(self):
+        '''
+        Toca o som da interface.
+        '''
+
+        self.sound.play()
 
 
 class Alignment(Enum):

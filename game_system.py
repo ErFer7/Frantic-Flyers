@@ -29,7 +29,7 @@ class GameManager():
     clock: pygame.time.Clock
     display: pygame.display.set_mode
     music_channel: pygame.mixer.Channel
-    sound_effects_channel: pygame.mixer.Channel
+    sfx_channel: pygame.mixer.Channel
     state: State
     events: list
     file_system: FileSystem
@@ -48,10 +48,11 @@ class GameManager():
         pygame.mixer.init()
 
         self.clock = pygame.time.Clock()
-        #self.display = pygame.display.set_mode(flags=pygame.FULLSCREEN)
-        self.display = pygame.display.set_mode(flags=pygame.RESIZABLE)
+        self.display = pygame.display.set_mode(flags=pygame.FULLSCREEN)
+
         self.music_channel = pygame.mixer.Channel(0)
-        self.sound_effects_channel = pygame.mixer.Channel(1)
+        self.music = pygame.mixer.Sound(os.path.join("Audio", "Music", "Music 1.wav"))
+        self.music_channel.play(self.music, loops=-1)
 
         self.state = State.MAIN_MENU
         self.events = []
@@ -112,79 +113,63 @@ class GameManager():
                     if event == Event.UI_MODIFY:
 
                         self.state = State.MODIFICATION_MENU
-                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_RETURN_TO_MENU:
 
                         self.state = State.MAIN_MENU
-                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_REDUCE_VELOCITY:
 
                         self.change_modifiers("Velocity", False)
-                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_INCREASE_VELOCITY:
 
                         self.change_modifiers("Velocity", True)
-                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_REDUCE_DAMAGE:
 
                         self.change_modifiers("Damage", False)
-                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_INCREASE_DAMAGE:
 
                         self.change_modifiers("Damage", True)
-                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_REDUCE_FIRERATE:
 
                         self.change_modifiers("Firerate", False)
-                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_INCREASE_FIRERATE:
 
                         self.change_modifiers("Firerate", True)
-                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_REDUCE_ARMOR:
 
                         self.change_modifiers("Armor", False)
-                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_INCREASE_ARMOR:
 
                         self.change_modifiers("Armor", True)
-                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_REDUCE_BULLET_TYPE:
 
                         self.change_modifiers("Bullet Type", False)
-                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_INCREASE_BULLET_TYPE:
 
                         self.change_modifiers("Bullet Type", True)
-                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_PLAY:
 
                         self.entities.update_player_modifiers(self.data)
                         self.entities.reset()
                         self.state = State.GAMEPLAY
-                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_EXIT:
 
                         self.state = State.EXIT
-                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_PAUSE:
 
                         self.state = State.PAUSE
-                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_RESUME:
 
                         self.state = State.GAMEPLAY
-                        # Tocar o áudio do botão aqui
                     elif event == Event.UI_RESTART:
 
                         self.entities.reset()
                         self.state = State.GAMEPLAY
-                        # Tocar o áudio do botão aqui
                     elif event == Event.GP_GAMEOVER:
 
                         self.data["Modification Points"] += self.entities.get_score() // 500
                         self.state = State.GAMEOVER
 
+                    self.user_interface.play_sound()
                     break
 
             self.events.clear()

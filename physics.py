@@ -63,8 +63,8 @@ class PhysicsManager():
 
                 if collided:
 
-                    enemy.change_life(-15)
-                    player.change_life(-15, player.get_armor_modifier())
+                    enemy.change_life(-15, True)
+                    player.change_life(-15, True, player.get_armor_modifier())
 
             for bullet in bullets:
 
@@ -76,7 +76,7 @@ class PhysicsManager():
 
                             if rect.collidepoint(bullet.get_position()):
 
-                                enemy.change_life(bullet.get_damage())
+                                enemy.change_life(bullet.get_damage(), False)
                                 bullet.deactivate()
                 else:  # Bala x jogador
 
@@ -84,7 +84,9 @@ class PhysicsManager():
 
                         if rect.collidepoint(bullet.get_position()):
 
-                            player.change_life(bullet.get_damage(), player.get_armor_modifier())
+                            player.change_life(bullet.get_damage(),
+                                               False,
+                                               player.get_armor_modifier())
                             bullet.deactivate()
 
 

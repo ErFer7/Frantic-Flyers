@@ -117,3 +117,7 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 ## 0.15 - 18/05/2021
 
 * Sistema de entidades concluído.
+
+## 0.16 - 19/05/2021
+
+* Som e música adicionados.

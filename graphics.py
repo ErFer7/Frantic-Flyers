@@ -80,6 +80,7 @@ class CustomSprite(pygame.sprite.Sprite):
         self.rect.x = int(position[0])
         self.rect.y = int(position[1])
 
+
 class CustomAnimatedSprite(pygame.sprite.Sprite):
 
     '''
