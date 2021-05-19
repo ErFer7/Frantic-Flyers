@@ -23,27 +23,28 @@ class EntityManager():
     Gerencia as entidades
     '''
 
-    score: int
-    screen_size: tuple
-    player: None
-    enemies: list
-    bullets: list
-    clouds: list
-    animations: list
-    inactive_bullets: list  # Usado no pooling
-    inactive_bullets_limit: int
-    enemies_limit: int
-    small_animation_limit: int
-    enemy_factory: None
-    animation_factory: None
-    elapsed_time: float
-    event: Event
+    score: int  # Pontuação
+    screen_size: tuple  # Tamanho da tela
+    player: None  # Jogador
+    enemies: list  # Inimigos
+    bullets: list  # Balas
+    clouds: list  # Nuvems
+    animations: list  # Animações
+    inactive_bullets: list  # Lista de balas inativas
+    inactive_bullets_limit: int  # Limite de balas inativas
+    enemies_limit: int  # Limite de inimigos
+    small_animation_limit: int  # Limite de animações pequenas
+    enemy_factory: None  # Fábrica de inimigos
+    animation_factory: None  # Fábrica de animações
+    elapsed_time: float  # Tempo passado
+    event: Event  # Eventos
 
     def __init__(self, screen_size, inactive_bullets_limit, enemies_limit, small_animation_limit):
 
         self.score = 0
         self.screen_size = screen_size
 
+        # Hitbox do jogador
         player_hitbox = Hitbox((self.screen_size[0] / 2, self.screen_size[1] / 2),
                                (0, 12, 35, 120),
                                (0, -5, 125, 35))
@@ -79,11 +80,11 @@ class EntityManager():
                                           (300, 300),
                                           180,
                                           os.path.join("Audio", "SFX", "Damage.wav"))
-        self.animation_factory = AnimationFactory()
+        self.animation_factory = AnimationFactory((300, 300))
         self.elapsed_time = 0.0
         self.event = None
 
-        self.generate_clouds(10)
+        self.generate_clouds(10)  # Gera as nuvens
 
     def update_player_modifiers(self, modifiers):
         '''
@@ -94,7 +95,7 @@ class EntityManager():
 
     def get_player_life(self):
         '''
-        Retorna a vida do jogador (método de ligação).
+        Retorna a vida do jogador.
         '''
 
         return self.player.get_life()
@@ -111,37 +112,50 @@ class EntityManager():
         Retorna uma lista de entidades.
         '''
 
+        # No caso de entidades para a física retorna um dicionário. Isso deixa a classificação
+        # de entidades mais fácil no processamento da física
         if physics_entities:
 
             return {"Clouds": self.clouds,
                     "Bullets": self.bullets,
                     "Enemies": self.enemies,
                     "Player": self.player}
-        else:
+        else:  # Retorna todas as entidades para o processamento gráfico
 
             return self.clouds + self.bullets + self.enemies + [self.player] + self.animations
 
     def generate_clouds(self, cloud_count):
         '''
-        Gera o cenário do jogo.
+        Gera as nuvens.
         '''
 
-        for _ in range(cloud_count):
+        for _ in range(cloud_count):  # Loop com base na quantidade de nuvens
 
+            # Posição inicial da nuvem. Esta posição é aleatória e fica acima da tela
             position = (randint(0, self.screen_size[0]),
                         randint(-self.screen_size[1], self.screen_size[1]))
-            cloud_index = randint(0, 4)
-            path = os.path.join("Sprites", "Scenery", f"Cloud {cloud_index}.png")
+
+            # Caminho para uma das nuvens. Definido aleatóriamente
+            path = os.path.join("Sprites", "Scenery", f"Cloud {randint(0, 4)}.png")
+
+            # Carrega a imagem da nuvem
             image = pygame.image.load(path)
+
+            # Define o tamanho da imagem
             size = (image.get_width() * 3, image.get_height() * 3)
+
+            # Define a velocidade com base no tamanho da imagem
             speed = (256.0 / image.get_width()) * 50.0
 
+            # Adiciona a nuvem na lista
             self.clouds.append(Cloud(position,
                                      size,
                                      path,
                                      0,
                                      speed))
 
+            # Ordena as nuvens com base no tamanho, assim as nuvens maiores ficarão por trás das
+            # menores
             self.clouds.sort(key=lambda cloud: cloud.size[0], reverse=True)
 
     def generate_shot(self, position, bullet_type, friendly, damage):
@@ -149,24 +163,32 @@ class EntityManager():
         Gera o tiro.
         '''
 
+        # Define o tamanho inicial, tamanho, caminho e velocidade
         instatiation_position = (0, 0)
         size = (3, 9)
         path = os.path.join("Sprites", "Bullets", "Bullet.png")
         velocity = 500.0
 
+        # Caso a bala seja do jogador muda sua velocidade para ir para o norte
         if friendly:
 
             velocity = -500.0
 
-        if bullet_type == BulletType.SIMPLE:
+        if bullet_type == BulletType.SIMPLE:  # Tiro simples
 
+            # Reaproveita balas caso tenha alguma diponível na lista de balas inativas
             if len(self.inactive_bullets) > 0:
+
+                # Define a bala, atira, adiciona a bala na lista de balas e a remove da lista de
+                # balas inativas
 
                 bullet = self.inactive_bullets[0]
                 bullet.shoot((position[0], position[1]), (0.0, velocity), friendly, damage)
                 self.bullets.append(bullet)
                 self.inactive_bullets.remove(bullet)
-            else:
+            else:  # Cria uma bala nova caso não haja nenhuma disponível
+
+                # Instancia a bala, atira e adiciona na lista de balas
 
                 bullet = Bullet(instatiation_position,
                                 size,
@@ -176,12 +198,17 @@ class EntityManager():
                                 damage)
                 bullet.shoot((position[0], position[1]), (0.0, velocity), friendly, damage)
                 self.bullets.append(bullet)
-        elif bullet_type == BulletType.DOUBLE:
+        elif bullet_type == BulletType.DOUBLE:  # Tiro duplo
+
+            # Posições laterais das balas, com um espaçamento de 60 pixels entre elas
 
             position_x_0 = position[0] - 30
             position_x_1 = position[0] + 30
 
-            if len(self.inactive_bullets) > 1:
+            if len(self.inactive_bullets) > 1:  # Caso tenham duas balas inativas
+
+                # Define as duas balas, atira cada uma e as adiciona na lista de balas. Depois
+                # as remove da lista de balas inativas.
 
                 bullet_left = self.inactive_bullets[0]
                 bullet_right = self.inactive_bullets[1]
@@ -201,7 +228,9 @@ class EntityManager():
 
                 self.bullets.append(bullet_right)
                 self.inactive_bullets.remove(bullet_right)
-            else:
+            else:  # Cria novas balas
+
+                # Instancia duas balas, atira cada uma e as adiciona na lista de balas.
 
                 bullet_left = Bullet(instatiation_position,
                                      size,
@@ -229,12 +258,18 @@ class EntityManager():
 
                 self.bullets.append(bullet_left)
                 self.bullets.append(bullet_right)
-        elif bullet_type == BulletType.TRIPLE:
+        elif bullet_type == BulletType.TRIPLE:  # Tiro triplo
+
+            # Posições laterais das balas, com um espaçamento de 60 pixels entre elas.
+            # A bala central fica na posição (0, 0)
 
             position_x_0 = position[0] - 28
             position_x_1 = position[0] + 28
 
-            if len(self.inactive_bullets) > 2:
+            if len(self.inactive_bullets) > 2:  # Caso tenham três balas inativas
+
+                # Define as três balas, atira cada uma e as adiciona na lista de balas. Depois
+                # as remove da lista de balas inativas.
 
                 bullet_left = self.inactive_bullets[0]
                 bullet_center = self.inactive_bullets[1]
@@ -263,7 +298,9 @@ class EntityManager():
 
                 self.bullets.append(bullet_right)
                 self.inactive_bullets.remove(bullet_right)
-            else:
+            else:  # Cria novas balas
+
+                # Instancia três balas, atira cada uma e as adiciona na lista de balas.
 
                 bullet_left = Bullet(instatiation_position,
                                      size,
@@ -304,12 +341,18 @@ class EntityManager():
                 self.bullets.append(bullet_left)
                 self.bullets.append(bullet_center)
                 self.bullets.append(bullet_right)
-        else:
+        else:  # Tiro triplo em ângulo
+
+            # Define as três balas, atira cada uma e as adiciona na lista de balas. Depois
+            # as remove da lista de balas inativas.
 
             position_x_0 = position[0] - 28
             position_x_1 = position[0] + 28
 
-            if len(self.inactive_bullets) > 2:
+            if len(self.inactive_bullets) > 2:  # Caso tenham três balas inativas
+
+                # Define as três balas, atira cada uma e as adiciona na lista de balas. Depois
+                # as remove da lista de balas inativas.
 
                 bullet_left = self.inactive_bullets[0]
                 bullet_center = self.inactive_bullets[1]
@@ -338,7 +381,9 @@ class EntityManager():
 
                 self.bullets.append(bullet_right)
                 self.inactive_bullets.remove(bullet_right)
-            else:
+            else:  # Cria novas balas
+
+                # Instancia três balas, atira cada uma e as adiciona na lista de balas.
 
                 bullet_left = Bullet(instatiation_position,
                                      size,
@@ -385,12 +430,16 @@ class EntityManager():
         Gera os inimigos.
         '''
 
+        # A cada 30 segundos adiciona um novo inimigo. Esta variável define quantos inimigos devem
+        # estar ativos.
         enemy_count = 1 + int(self.elapsed_time / 30)
 
+        # Limita os inimigos
         if enemy_count > self.enemies_limit:
 
             enemy_count = self.enemies_limit
 
+        # Gera inimigos quando necessário
         while enemy_count - len(self.enemies) > 0:
 
             enemy = self.enemy_factory.generate_enemy(self.elapsed_time)
@@ -401,7 +450,7 @@ class EntityManager():
 
     def reset(self):
         '''
-        Redefine todas as entidades.
+        Redefine as entidades e outros atributos.
         '''
 
         self.score = 0
@@ -416,22 +465,30 @@ class EntityManager():
         Atualiza as entidades e seus comportamentos.
         '''
 
-        self.event = None
+        self.event = None  # Reseta o evento
 
-        if state == State.GAMEPLAY:
+        if state == State.GAMEPLAY:  # atualiza apenas durante o gameplay
 
+            # Comportamento do jogador
             self.player.behaviour(events, self.screen_size, tick)
 
+            # Caso o jogador esteja preparado para dar um tiro
             if self.player.is_attacking() and self.player.is_ready():
 
+                # Gera o tiro
                 self.generate_shot(self.player.get_position(),
                                    self.player.get_bullet_type(),
                                    True,
                                    self.player.get_damage(self.player.get_damage_modifier()))
 
+                # Define o jogador como não preparado para dar um tiro (Cooldown)
                 self.player.set_fire_state(False)
+
+                # Toca o som de tiro
                 self.player.play_shot_sound()
 
+            # Caso o jogador tenha sofrido dano adiciona uma animação de explosão e toca um som de
+            # dano
             if self.player.is_damaged():
 
                 if len(self.animations) <= self.small_animation_limit:
@@ -441,14 +498,18 @@ class EntityManager():
 
                 self.player.play_damage_sound()
 
+            # Caso o jogador tenha sido destruido encerra o gameplay
             if not self.player.is_active():
 
                 self.event = Event.GP_GAMEOVER
 
+            # Processa o comportamento das nuvens
             for cloud in self.clouds:
 
                 cloud.behaviour(self.screen_size)
 
+            # Processa o comportamento das balas e as remove da lista quando elas saem da tela
+            # ou atingem um inimigo
             for bullet in self.bullets:
 
                 bullet.behaviour(self.screen_size)
@@ -458,10 +519,12 @@ class EntityManager():
                     self.inactive_bullets.append(bullet)
                     self.bullets.remove(bullet)
 
+            # Processa o comportamento dos inimigos
             for enemy in self.enemies:
 
                 enemy.behaviour(tick, self.screen_size, self.player.get_position(), self.enemies)
 
+                # Gera os tiros dos inimigos. A lógica é similar a do jogador
                 if enemy.is_attacking() and enemy.is_ready():
 
                     self.generate_shot(enemy.get_position(),
@@ -472,6 +535,7 @@ class EntityManager():
                     enemy.set_fire_state(False)
                     enemy.play_shot_sound()
 
+                # Gera uma pequena explosão quando sofre dano. Lógica similar a do jogador
                 if enemy.is_damaged():
 
                     if len(self.animations) <= self.small_animation_limit:
@@ -481,10 +545,13 @@ class EntityManager():
 
                     enemy.play_damage_sound()
 
+                # Quando o inimigo fica inativo
                 if not enemy.is_active():
 
+                    # Caso o inimigo tenha sido destruído
                     if enemy.is_destroyed():
 
+                        # Adiciona a pontuação e dá 10 de vida ao jogador
                         self.score += enemy.get_score_value()
                         self.player.change_life(10)
 
@@ -492,8 +559,9 @@ class EntityManager():
                         self.animations.append(
                             self.animation_factory.generate_explosion(enemy.get_position(), False))
 
-                    self.enemies.remove(enemy)
+                    self.enemies.remove(enemy)  # Remove o inimigo
 
+            # Processa o comportamento das animações e as remove da lista quando elas acabam
             for animation in self.animations:
 
                 animation.behaviour()
@@ -502,9 +570,10 @@ class EntityManager():
 
                     self.animations.remove(animation)
 
-            self.enemy_generator()
-            self.elapsed_time += (1 / tick)
+            self.enemy_generator()  # Processa a geração de inimigos
+            self.elapsed_time += (1 / tick)  # Conta o tempo
 
+            # Remove o excesso de balas inativas
             while len(self.inactive_bullets) > self.inactive_bullets_limit:
 
                 self.inactive_bullets.remove(self.inactive_bullets[0])
@@ -524,13 +593,13 @@ class EnemyFactory():
     para ser permitida a geração dos inimigos mais difíceis.
     '''
 
-    screen_size: tuple
-    max_difficulty: float
-    drag: float
-    stun_time: float
-    size: tuple
-    angle: int
-    damage_sound: str
+    screen_size: tuple  # Tamanho da tela
+    max_difficulty: float  # Dificuldade máxima
+    drag: float  # Arrasto padrão
+    stun_time: float  # Tempo de atordoamento padrão
+    size: tuple  # Tamanho padrão
+    angle: int  # Ângulo padrão
+    damage_sound: str  # Som de dano padrão
 
     def __init__(self, scree_size, max_difficulty, drag, stun_time, size, angle, damage_sound):
 
@@ -549,6 +618,9 @@ class EnemyFactory():
 
         enemy = None
 
+        # A posição no spawn é determinada em uma matriz, assim  evita que aviões sejam
+        # instanciados em posições desajustadas
+
         spawn_positions = []
 
         for i in range(150, self.screen_size[0] - 150, 300):
@@ -563,9 +635,13 @@ class EnemyFactory():
 
             difficulty = self.max_difficulty
 
+        # Número aleatório gerado com base em um intervalo que aumenta conforme o tempo passa
         difficulty_range = randint(0, int(100.0 * difficulty / self.max_difficulty))
 
-        if difficulty_range <= 25:
+        if difficulty_range <= 25:  # Dificuldade inicial
+
+            # Gera algum dos quatro aviões. O avião gerado tem sua hibox definida e é instanciado
+            # com seus parÂmetros
 
             random_number = randint(0, 100)
 
@@ -657,9 +733,12 @@ class EnemyFactory():
                               self.angle,
                               hitbox,
                               1000)
-        elif difficulty_range <= 50:
+        elif difficulty_range <= 50:  # Dificuldade média
 
-            random_number = randint(0, 2)
+            # Gera algum dos dois aviões. O avião gerado tem sua hibox definida e é instanciado
+            # com seus parÂmetros
+
+            random_number = randint(0, 1)
 
             if random_number == 0:
 
@@ -705,9 +784,12 @@ class EnemyFactory():
                               self.angle,
                               hitbox,
                               250)
-        elif difficulty_range <= 75:
+        elif difficulty_range <= 75:  # Dificuldade alta
 
-            random_number = randint(0, 2)
+            # Gera algum dos dois aviões. O avião gerado tem sua hibox definida e é instanciado
+            # com seus parÂmetros
+
+            random_number = randint(0, 1)
 
             if random_number == 0:
 
@@ -753,9 +835,12 @@ class EnemyFactory():
                               self.angle,
                               hitbox,
                               500)
-        else:
+        else:  # Dificuldade máxima
 
-            random_number = randint(0, 2)
+            # Gera algum dos dois aviões. O avião gerado tem sua hibox definida e é instanciado
+            # com seus parÂmetros
+
+            random_number = randint(0, 1)
 
             if random_number == 0:
 
@@ -811,10 +896,14 @@ class AnimationFactory():
     Auxilia na criação de uma animação.
     '''
 
-    path_lists: list
+    path_lists: list  # Lista de caminhos para os arquivos
+    size: tuple  # Tamanho padrão
 
-    def __init__(self):
+    def __init__(self, size):
 
+        # Obtém o caminho para todos arquivos
+
+        self.size = size
         self.path_lists = []
 
         for i in range(5):
@@ -836,23 +925,23 @@ class AnimationFactory():
 
     def generate_explosion(self, position, small):
         '''
-        Gera uma entidade animada de explosão.
+        Gera uma entidade animada de explosão e a retorna.
         '''
 
-        size = (300, 300)
         path = None
-
         index = 0
 
-        if small:
+        if small:  # Caso a explosão seja pequena
 
-            index = randint(0, 2)
-        else:
+            index = randint(0, 2)  # Indice das explosões pequenas
+        else:  # Caso a explosão seja grande
 
-            index = randint(3, 4)
+            index = randint(3, 4)  # Indice das explosões grandes
+
+            # Caminho do som da explosão
             path = os.path.join("Audio", "SFX", "Explosion.wav")
 
-        return Explosion(position, size, self.path_lists[index], path)
+        return Explosion(position, self.size, self.path_lists[index], path)
 
 
 class BulletType(Enum):
@@ -873,13 +962,13 @@ class Entity():
     Entidade física.
     '''
 
-    active: bool
+    active: bool  # Estado de atividade da entidade
     position: list  # O sistema de coordenadas tem o ponto (0, 0) no topo da tela. eixo y invertido
     velocity: list  # Para cima: (0, -1), para baixo: (0, 1)
-    drag: float
-    size: tuple
-    hitbox: Hitbox
-    sprite: CustomSprite
+    drag: float  # Arrasto
+    size: tuple  # Tamanho
+    hitbox: Hitbox  # Hitbox
+    sprite: CustomSprite  # Sprite
 
     def __init__(self, position, drag, size, animate, sprite_path, angle, hitbox):
 
@@ -890,12 +979,14 @@ class Entity():
         self.size = size
         self.hitbox = None
 
+        # Define uma hitbox caso necessário
         if hitbox is not None:
 
             self.hitbox = hitbox
 
         self.sprite = None
 
+        # Define um sprite animado ou normal
         if animate:
 
             self.sprite = CustomAnimatedSprite((self.position[0] - size[0] / 2,
@@ -938,9 +1029,11 @@ class Entity():
 
         self.position = list(position)
 
+        # Atualiza a posição do sprite
         self.sprite.update((self.position[0] - self.size[0] / 2,
                             self.position[1] - self.size[1] / 2))
 
+        # Atualiza a hitbox caso tenha
         if self.hitbox is not None:
 
             self.hitbox.update(position)
@@ -961,7 +1054,7 @@ class Entity():
 
     def get_hitbox(self):
         '''
-        Retorna uma lista de hitbox. Pode ser None.
+        Retorna uma lista de hitbox's. Pode ser None.
         '''
 
         if self.hitbox is not None:
@@ -989,27 +1082,27 @@ class Entity():
 class Aircraft(Entity):
 
     '''
-    Super Classe.
+    Super Classe para as aeronaves.
     '''
 
     direction: list  # Armazena a direção, assim conservamos a velocidade
-    life: int
-    max_life: int
-    speed: float  # Pixels por segundo
-    damage: float
-    bullet_type: BulletType
-    firerate: float
-    firerate_cooldown: float
-    fire_ready: bool
-    armor: float
-    stun_time: float  # Tempo depois de levar dano
-    stun_cooldown: float
-    stunned: bool
-    attacking: bool
-    destroyed: bool
-    damaged: bool
-    attack_sound: pygame.mixer.Sound
-    damage_sound: pygame.mixer.Sound
+    life: int  # Vida
+    max_life: int  # Vida máxima
+    speed: float  # Velocidade em pixels por segundo
+    damage: float  # Dano
+    bullet_type: BulletType  # Tipo de bala
+    firerate: float  # Cadência de tiros
+    firerate_cooldown: float  # Cooldown da cadência
+    fire_ready: bool  # Define se está pronto para dar um tiro
+    armor: float  # Armadura
+    stun_time: float  # Tempo de atordoamento
+    stun_cooldown: float  # Cooldown de atordoamento
+    stunned: bool  # Define se está atordoado
+    attacking: bool  # Define se está atacando
+    destroyed: bool  # Define se está destruido
+    damaged: bool  # Define se levou dano
+    attack_sound: pygame.mixer.Sound  # Som de ataque
+    damage_sound: pygame.mixer.Sound  # Som de dano
 
     def __init__(self,
                  position,
@@ -1051,20 +1144,23 @@ class Aircraft(Entity):
 
     def change_life(self, value, stun=False, armor_modifier=0.0):
         '''
-        Aplica o dano
+        Muda o valor de vida da aeronave
         '''
 
-        if value < 0:
+        if value < 0:  # Se for dano
 
-            if not self.stunned:
+            if not self.stunned:  # Se não estiver atordoado
 
+                # Muda a vida com base na armadura
                 self.life += int(value * (1.0 / (self.armor + armor_modifier / 100.0)))
 
-                if stun:
+                if stun:  # Atordoa caso necessário
 
                     self.stunned = True
-                self.damaged = True
-        else:
+                self.damaged = True  # Define que a aeronave foi danificada
+        else:  # Se for cura
+
+            # Aumenta vida, mas limita até a vida máxima
 
             self.life += int(value)
 
@@ -1072,7 +1168,7 @@ class Aircraft(Entity):
 
                 self.life = self.max_life
 
-        if self.life <= 0:
+        if self.life <= 0:  # Caso a vida seja menor que zero marca que a aeronave está inativa
 
             self.life = 0
             self.active = False
@@ -1080,7 +1176,8 @@ class Aircraft(Entity):
 
     def stun_behaviour(self, tick):
         '''
-        Processa o comportamento do atordoamento.
+        Processa o comportamento do atordoamento. Funciona como um contador que reseta quando chega
+        a um limite
         '''
 
         if self.stunned:
@@ -1094,7 +1191,8 @@ class Aircraft(Entity):
 
     def firerate_behaviour(self, tick, firerate_modifier=0.0):
         '''
-        Processa o cooldown do tiro.
+        Processa o cooldown do tiro. Funciona como um contador que reseta quando chega
+        a um limite. Neste método é considerado o modificador de cadência.
         '''
         if not self.fire_ready:
 
@@ -1107,7 +1205,7 @@ class Aircraft(Entity):
 
     def get_damage(self, damage_modifier=0.0):
         '''
-        Obtém o dano da aeronave.
+        Obtém o dano da aeronave. Considera o modificador de dano.
         '''
 
         return -(self.damage + damage_modifier / 4)
@@ -1149,7 +1247,7 @@ class Aircraft(Entity):
 
     def is_damaged(self):
         '''
-        Retorna verdadeiro caso a aeronave tenha sofrido dano.
+        Retorna verdadeiro caso a aeronave tenha sofrido dano. Reseta o estado do dano.
         '''
 
         damaged = self.damaged
@@ -1178,11 +1276,11 @@ class Player(Aircraft):
     Jogador.
     '''
 
+    # Modificadores
     velocity_modifier: int
     damage_modifier: int
     firerate_modifier: int
     armor_modifier: int
-    idle_sound: pygame.mixer.Sound
 
     def __init__(self,
                  position,
@@ -1227,51 +1325,53 @@ class Player(Aircraft):
         Definição do comportamento do jogador.
         '''
 
-        self.stun_behaviour(tick)
-        self.firerate_behaviour(tick, self.firerate_modifier)
+        self.stun_behaviour(tick)  # Processa o contador do atordoamento
+        self.firerate_behaviour(tick, self.firerate_modifier)  # Processa o contador da cadência
 
-        for event in events:
+        for event in events:  # Para cada tecla pressionada ou clique
 
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN:  # Caso uma tecla tenha sido pressionada
 
-                if event.key == pygame.K_a:
+                if event.key == pygame.K_a:  # Tecla 'A'
 
-                    self.direction[0] = -1
-                elif event.key == pygame.K_d and self.position[0] < screen_size[0]:
+                    self.direction[0] = -1  # Esquerda
+                elif event.key == pygame.K_d:  # Tecla 'D'
 
-                    self.direction[0] = 1
+                    self.direction[0] = 1  # Direita
 
-                if event.key == pygame.K_s and self.position[1] < screen_size[1]:
+                if event.key == pygame.K_s:  # Tecla 'S'
 
-                    self.direction[1] = 1
-                elif event.key == pygame.K_w and self.position[1] > 0:
+                    self.direction[1] = 1  # Para baixo
+                elif event.key == pygame.K_w:  # Tecla 'W'
 
-                    self.direction[1] = -1
+                    self.direction[1] = -1  # Para cima
 
-                if event.key == pygame.K_k:
+                if event.key == pygame.K_k:  # Tecla 'K'
 
-                    self.attacking = True
+                    self.attacking = True  # Ataca
             elif event.type == pygame.KEYUP:  # Caso uma tecla seja solta
 
                 if event.key == pygame.K_a or event.key == pygame.K_d:  # Teclas horizontais
 
-                    self.direction[0] = 0
+                    self.direction[0] = 0  # Parado horizontalmente
 
                 if event.key == pygame.K_s or event.key == pygame.K_w:  # Teclas verticais
 
-                    self.direction[1] = 0
+                    self.direction[1] = 0  # Parado verticalmente
 
-                if event.key == pygame.K_k:
+                if event.key == pygame.K_k:  # Para de atacar
 
                     self.attacking = False
 
-            if self.direction[0] != 0:
+            if self.direction[0] != 0:  # Adiciona a velociade lateral
 
                 self.velocity[0] = self.direction[0] * (self.speed + self.velocity_modifier * 4)
 
-            if self.direction[1] != 0:
+            if self.direction[1] != 0:  # Adiciona a velocidade vertical
 
                 self.velocity[1] = self.direction[1] * (self.speed + self.velocity_modifier * 4)
+
+        # Adiciona uma velociade contrária para impedir que o jogador saia da tela
 
         if self.position[0] <= 0:
 
@@ -1355,7 +1455,7 @@ class Enemy(Aircraft):
     Inimigos.
     '''
 
-    score_value: int
+    score_value: int # Valor em pontos
 
     def __init__(self,
                  position,
@@ -1398,10 +1498,10 @@ class Enemy(Aircraft):
         Definição do comportamento do inimigo.
         '''
 
-        self.stun_behaviour(tick)
-        self.firerate_behaviour(tick)
+        self.stun_behaviour(tick) # Processa o contador do atordoamento
+        self.firerate_behaviour(tick) # Processa o contador da cadência
 
-        self.velocity[1] = self.speed
+        self.velocity[1] = self.speed # Mantém sempre a mesma velocidade
 
         chase_player = True
 

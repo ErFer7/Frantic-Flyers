@@ -1,4 +1,4 @@
-# Frantic Flyers 7
+# Frantic Flyers
 
 Trabalho de conclusão do disciplina de programação orientada a objetos II da UFSC.
 
@@ -121,3 +121,7 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 ## 0.16 - 19/05/2021
 
 * Som e música adicionados.
+
+## 1.0 - 19/05/2021
+
+* Removido o 7.

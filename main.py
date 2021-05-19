@@ -11,5 +11,5 @@ from game_system import GameManager
 
 VERSION = "v0.16"
 
-game_manager = GameManager(VERSION)
-game_manager.run_game(60)
+game_manager = GameManager(VERSION)  # Instancia o jogo
+game_manager.run_game(60)  # Roda o jogo
