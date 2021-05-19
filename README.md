@@ -125,3 +125,5 @@ Trabalho de conclusão do disciplina de programação orientada a objetos II da 
 ## 1.0 - 19/05/2021
 
 * Removido o 7.
+* Comentários.
+* Correções de erros.

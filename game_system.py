@@ -26,23 +26,23 @@ class GameManager():
     Classe que gerencia o funcionamento do jogo e armazena dados do jogador.
     '''
 
-    clock: pygame.time.Clock
-    display: pygame.display.set_mode
-    music_channel: pygame.mixer.Channel
-    sfx_channel: pygame.mixer.Channel
-    state: State
-    events: list
-    file_system: FileSystem
-    data: dict
-    entities: EntityManager
-    physics: PhysicsManager
-    graphics: GraphicsManager
-    user_interface: UserInterfaceManager
+    clock: pygame.time.Clock  # CLock para o fps
+    display: pygame.display.set_mode  # Display da tela
+    music_channel: pygame.mixer.Channel  # Canal de música
+    state: State  # Estado do jogo
+    events: list  # Lista de eventos
+    file_system: FileSystem  # Sistema de arquivos
+    data: dict  # Dados
+    entities: EntityManager  # Sistema de entidades
+    physics: PhysicsManager  # Sistema de física
+    graphics: GraphicsManager  # Sistema gráfico
+    user_interface: UserInterfaceManager  # Sistema de interface
 
     def __init__(self, version):
 
-        seed(time_ns())
+        seed(time_ns())  # Inicializa o RNG
 
+        # Inicializa o pygame
         pygame.display.init()
         pygame.font.init()
         pygame.mixer.init()
@@ -61,6 +61,7 @@ class GameManager():
 
         # Inicializa o jogo com os dados padrões e depois verifica se é necessário
         # Carregar os dados da memória permanente.
+
         self.data = {"Modification Points": 0,
                      "Velocity": 25,
                      "Damage": 25,
@@ -75,6 +76,7 @@ class GameManager():
 
             self.file_system.set_data(self.data)
 
+        # Obtém o tamanho da tela
         screen_size = (self.display.get_width(), self.display.get_height())
 
         self.entities = EntityManager(screen_size, 100, 10, 5)
@@ -87,9 +89,9 @@ class GameManager():
         Roda o jogo.
         '''
 
-        while self.state != State.EXIT:
+        while self.state != State.EXIT:  # Enquando o jogo não for encerrado
 
-            events = pygame.event.get()
+            events = pygame.event.get()  # Obtém os eventos (teclado e mouse)
 
             # Atualiza cada sistema
             self.entities.update(self.state, events, tick)
@@ -102,10 +104,11 @@ class GameManager():
                                        self.entities.get_score(),
                                        self.entities.get_player_life())
 
-            # Obtém os eventos do jogo
+            # Obtém os eventos de cada sistema
             self.events.append(self.entities.get_event())
             self.events.append(self.user_interface.get_event())
 
+            # Para cada evento determina o próximo estado e operações a serem feitas
             for event in self.events:
 
                 if event is not None:
@@ -169,20 +172,23 @@ class GameManager():
                         self.data["Modification Points"] += self.entities.get_score() // 500
                         self.state = State.GAMEOVER
 
-                    self.user_interface.play_sound()
+                    self.user_interface.play_sound()  # Toca o som da interface
                     break
 
             self.events.clear()
 
-            pygame.display.update()
-            self.clock.tick(tick)
+            pygame.display.update()  # Atualiza o display
+            self.clock.tick(tick)  # Espera o clock
 
+        # Salva os dados e encerra o jogo
+        self.file_system.write_file()
         pygame.quit()
         sys.exit()
 
     def change_modifiers(self, modifier, increase):
         '''
-        Muda os modificadores.
+        Muda os modificadores. Limita cada modificador a um intervalo de 0 a 100. Cada modificação
+        é salva na memória permanente.
         '''
 
         if increase:

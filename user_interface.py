@@ -17,16 +17,16 @@ from states import Event, State
 class UserInterfaceManager():
 
     '''
-    Gerencia as interfaces
+    Gerencia as interfaces.
     '''
 
-    user_interface_event: Event
-    main_menu: None
-    modification_menu: None
-    gameplay_interface: None
-    pause_interface: None
-    gameover_interface: None
-    sound: pygame.mixer.Sound
+    user_interface_event: Event  # Evento
+    main_menu: None  # Menu principal
+    modification_menu: None  # Menu de modificação
+    gameplay_interface: None  # Interface do gameplay
+    pause_interface: None  # Pause
+    gameover_interface: None  # Fim de jogo
+    sound: pygame.mixer.Sound  # Som
 
     def __init__(self, screen_size, version):
 
@@ -40,12 +40,14 @@ class UserInterfaceManager():
 
     def update(self, state, display, events, modification_data, score, life):
         '''
-        Atualiza os eventos e gráficos da interface
+        Atualiza os eventos e gráficos da interface.
         '''
 
-        self.user_interface_event = None
+        self.user_interface_event = None  # Redefine o evento
 
-        # Atualiza os eventos
+        # Atualiza os eventos com base no estado. Em geral a interface é atualizada, os eventos dos
+        # botões são obtidos e é feita a renderização
+
         if state == State.MAIN_MENU:
 
             for event in events:
@@ -106,7 +108,7 @@ class UserInterfaceManager():
 class Alignment(Enum):
 
     '''
-    Alinhamento do elemento da UI
+    Alinhamento do elemento da UI.
     '''
 
     CENTER = 1
@@ -123,17 +125,17 @@ class Alignment(Enum):
 class UserInterface():
 
     '''
-    Define a base de uma tela
+    Define a base de uma tela. Classe usada para herança.
     '''
 
     position: tuple  # Posição
     screen_size: tuple  # Tamanho da tela
     texts: dict  # textos
     buttons: dict  # Botões
-    bars: dict
-    surface: pygame.Surface  # Superfície
-    background: None
-    background_color: pygame.color.Color
+    bars: dict  # Barras
+    surface: pygame.Surface  # Superfície e renderização
+    background: None  # Plano de fundo
+    background_color: pygame.color.Color  # Cor do plano de fundo
 
     def __init__(self, position, size, screen_size, background_color):
 
@@ -148,41 +150,41 @@ class UserInterface():
 
     def render(self, display):
         '''
-        Atualiza e renderiza a interface
+        Renderiza a interface.
         '''
 
-        self.surface.fill(self.background_color)
+        self.surface.fill(self.background_color)  # Preenche o fundo
 
-        if self.background is not None:
+        if self.background is not None:  # Renderiza o plano de fundo se tiver
 
             self.background.sprites.draw(self.surface)
 
-        for key in self.buttons:
+        for key in self.buttons:  # Renderiza os botões
 
             self.buttons[key].render(self.surface)
 
-        for key in self.bars:
+        for key in self.bars:  # Renderiza as barras
 
             self.bars[key].render(self.surface)
 
-        for key in self.texts:
+        for key in self.texts:  # Renderiza os textos
 
             self.surface.blit(self.texts[key].get_render(), self.texts[key].get_position())
 
-        display.blit(self.surface, self.position)
+        display.blit(self.surface, self.position)  # Renderiza a superfície no display
 
     def check_buttons(self, event):
         '''
-        Checa qual botão está sendo pressionado
+        Checa qual botão está sendo pressionado.
         '''
 
         user_interface_event = None
 
         for key in self.buttons:
 
-            if self.buttons[key].is_pressed(event):
+            if self.buttons[key].is_pressed(event):  # Caso o botão tenha sido pressionado
 
-                user_interface_event = self.buttons[key].get_event()
+                user_interface_event = self.buttons[key].get_event()  # Obtém o evento do botão
                 break
 
         return user_interface_event
@@ -191,13 +193,13 @@ class UserInterface():
 class Button():
 
     '''
-    Define um botão
+    Define um botão.
     '''
 
     position: tuple  # Posição
     size: tuple  # Tamanho
-    event: Event
-    key: None
+    event: Event  # Evento
+    key: None  # Tecla de ativação
     sprites: pygame.sprite.RenderPlain()  # Sprites
 
     def __init__(self,
@@ -210,17 +212,18 @@ class Button():
                  background,
                  foreground):
 
-        self.position = None
         self.size = size
         self.event = event
         self.key = key
         self.sprites = pygame.sprite.RenderPlain()
 
+        # Obtém a posição calculada com o alinhamento
         self.position = UserInterfaceUtillities.calculate_position(alignment,
                                                                    position,
                                                                    size,
                                                                    screen_size)
 
+        # Cria dois sprites para o botão e os adiciona no grupo de sprites
         self.sprites.add(CustomSprite(self.position, size, color=foreground))
         self.sprites.add(CustomSprite((self.position[0] + 10, self.position[1] + 10),
                                       (size[0] - 20, size[1] - 20),
@@ -228,7 +231,7 @@ class Button():
 
     def is_pressed(self, event):
         '''
-        Checa se o botão foi clicado
+        Checa se o botão foi clicado ou pressionado.
         '''
 
         is_clicked = False
@@ -236,13 +239,15 @@ class Button():
 
         if event is not None:
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN:  # Em caso de cliques
 
+                # Verifica se o clique foi no botão
                 is_clicked = self.sprites.sprites()[0].rect.collidepoint(event.pos)
-            elif event.type == pygame.KEYDOWN:
+            elif event.type == pygame.KEYDOWN:  # Em caso de teclas pressionadas
 
                 if self.key is not None:
 
+                    # Verifica se a tecla é a especificada
                     key_is_pressed = self.key == event.key
 
         if is_clicked or key_is_pressed:
@@ -270,18 +275,18 @@ class Button():
 class Text():
 
     '''
-    Define o elemento de texto
+    Define o texto.
     '''
 
     size: int  # Tamanho
     position: tuple  # Posição
     font: pygame.font.Font  # Fonte
-    text: pygame.font.Font.render  # Superfície renderizada
+    text: pygame.font.Font.render  # Superfície renderizada do texto
     color: pygame.color.Color  # Cor
-    has_shadow: bool
-    shadow_color: pygame.color.Color
-    shadow_text: pygame.font.Font.render
-    merged_surface: pygame.Surface
+    has_shadow: bool  # Define se o texto tem sombra
+    shadow_color: pygame.color.Color  # Cor da sombra
+    shadow_text: pygame.font.Font.render  # Superfície renderizada do texto de sombra
+    merged_surface: pygame.Surface  # Superfície unida
 
     def __init__(self,
                  text,
@@ -294,7 +299,6 @@ class Text():
                  shadow_color=None):
 
         self.size = size
-        self.position = None
         self.color = pygame.color.Color(color)
         self.font = pygame.font.Font(os.path.join("Fonts", "joystix monospace.ttf"), self.size)
         self.text = self.font.render(text, False, self.color)
@@ -305,14 +309,15 @@ class Text():
                                               self.text.get_rect().height),
                                              pygame.SRCALPHA)
 
-        if self.has_shadow:
+        if self.has_shadow:  # Se tem sombra cria o texto de sombra e o renderiza
 
             self.shadow_color = pygame.color.Color(shadow_color)
             self.shadow_text = self.font.render(text, False, self.shadow_color)
             self.merged_surface.blit(self.shadow_text, (self.size // 8, 0))
 
-        self.merged_surface.blit(self.text, (0, 0))
+        self.merged_surface.blit(self.text, (0, 0))  # Renderiza o texto
 
+        # Obtém a posição calculada com o alinhamento
         self.position = UserInterfaceUtillities.calculate_position(alignment,
                                                                    position,
                                                                    (self.text.get_rect().width,
@@ -321,30 +326,30 @@ class Text():
 
     def update(self, text):
         '''
-        Atualiza o texto
+        Atualiza o texto.
         '''
 
-        self.merged_surface.fill((0, 0, 0, 0))
+        self.merged_surface.fill((0, 0, 0, 0))  # Limpa a superfície
 
-        self.text = self.font.render(text, False, self.color)
+        self.text = self.font.render(text, False, self.color)  # Renderiza o texto
 
-        if self.has_shadow:
+        if self.has_shadow:  # Se tem sombra renderiza o texto de sombra
 
             self.shadow_text = self.font.render(text, False, self.shadow_color)
             self.merged_surface.blit(self.shadow_text, (self.size // 8, 0))
 
-        self.merged_surface.blit(self.text, (0, 0))
+        self.merged_surface.blit(self.text, (0, 0))  # Renderiza o texto na superfície
 
     def get_render(self):
         '''
-        Retorna a superfície do texto
+        Retorna a superfície do texto.
         '''
 
         return self.merged_surface
 
     def get_position(self):
         '''
-        Retorna a posição
+        Retorna a posição.
         '''
 
         return self.position
@@ -353,7 +358,7 @@ class Text():
 class Background():
 
     '''
-    Define o plano de fundo com sprites
+    Define o plano de fundo com sprites.
     '''
 
     sprites: pygame.sprite.RenderPlain  # Sprites
@@ -361,6 +366,8 @@ class Background():
     def __init__(self, size):
 
         self.sprites = pygame.sprite.RenderPlain()
+
+        # No caso só foi usado um sprite
         self.sprites.add(CustomSprite((size[0] / 2 - 512, size[1] / 2 - 512),
                                       (1024, 1024),
                                       os.path.join("Sprites", "Background", "UI_Background.png")))
@@ -369,23 +376,22 @@ class Background():
 class Bar():
 
     '''
-    Define uma barra
+    Define uma barra.
     '''
 
     position: tuple  # Posição
-    internal_bar_position: tuple
-    size: tuple
-    internal_bar_size: tuple
+    internal_bar_position: tuple  # Posição da barra interna
+    size: tuple  # Tamanho
+    internal_bar_size: tuple  # Tamanho da barra interna
     sprites: pygame.sprite.RenderPlain  # Sprites
 
     def __init__(self, alignment, position, size, border_color, color, screen_size):
 
-        self.position = None
-        self.internal_bar_position = None
         self.size = size
         self.internal_bar_size = (size[0] - 10, size[1] - 10)
         self.sprites = pygame.sprite.RenderPlain()
 
+        # Obtém a posição calculada com o alinhamento
         self.position = UserInterfaceUtillities.calculate_position(alignment,
                                                                    position,
                                                                    size,
@@ -403,12 +409,12 @@ class Bar():
 
     def update(self, value):
         '''
-        Atualiza o tamanho da barra com base em um valor de 0 a 100 (percentual).
+        Atualiza o tamanho da barra com base em um valor de 0 a 100.
         '''
 
         new_value = int((self.internal_bar_size[0] / 100.0) * value)
 
-        if new_value == 0:
+        if new_value == 0:  # Impede que o valor seja menor que 1
 
             new_value = 1
 
@@ -417,7 +423,7 @@ class Bar():
 
     def render(self, surface):
         '''
-        Renderiza a barra
+        Renderiza a barra.
         '''
 
         self.sprites.draw(surface)
@@ -432,7 +438,8 @@ class UserInterfaceUtillities():
     @staticmethod
     def calculate_position(alignment, position, size, screen_size):
         '''
-        Calcula a posição com base no alinhamento.
+        Calcula a posição com base no alinhamento. O valor de posição inserido é redefindo para
+        uma nova posição que usa o alinhamento especificado como origem.
         '''
 
         calculated_position = ()
@@ -553,7 +560,7 @@ class ModificationMenu(UserInterface):
 
         super().__init__((0, 0), screen_size, screen_size, background_color)
 
-        # Inicializa o plano de fundo, botões e textos
+        # Inicializa o plano de fundo, botões, textos e barras
 
         self.background = Background(screen_size)
 
@@ -915,6 +922,7 @@ class ModificationMenu(UserInterface):
         bullet_type_number = modification_data["Bullet Type"]
         bullet_type = f"{bullet_type_number}: "
 
+        # Definição do texto do tipo de bala
         if bullet_type_number <= 25:
 
             bullet_type += "SIMPLES"
@@ -928,6 +936,7 @@ class ModificationMenu(UserInterface):
 
             bullet_type += "TRIPLO AVANÇADO"
 
+        # Atualiza os elementos da interface
         self.texts["Point Number"].update(str(modification_data["Modification Points"]))
         self.texts["Velocity Number"].update(str(modification_data["Velocity"]))
         self.bars["Velocity"].update(modification_data["Velocity"])
@@ -950,6 +959,8 @@ class GameplayInterface(UserInterface):
     def __init__(self, screen_size, background_color):
 
         super().__init__((0, 0), screen_size, screen_size, background_color)
+
+        # Inicializa barras, botões e textos
 
         self.bars["Life"] = Bar(Alignment.BOTTOM_LEFT,
                                 (25, 25),
@@ -1020,6 +1031,8 @@ class PauseInterface(UserInterface):
     def __init__(self, screen_size, background_color):
 
         super().__init__((0, 0), screen_size, screen_size, background_color)
+
+        # Inicializa o plano de fundo, botões e textos
 
         self.background = Background(screen_size)
 
@@ -1093,6 +1106,8 @@ class GameoverInterface(UserInterface):
     def __init__(self, screen_size, background_color):
 
         super().__init__((0, 0), screen_size, screen_size, background_color)
+
+        # Inicializa o plano de fundo, botões e textos
 
         self.background = Background(screen_size)
 

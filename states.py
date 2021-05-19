@@ -10,7 +10,7 @@ from enum import Enum
 class Event(Enum):
 
     '''
-    Eventos do jogo
+    Eventos do jogo,
     '''
 
     UI_MODIFY = 1
@@ -36,7 +36,7 @@ class Event(Enum):
 class State(Enum):
 
     '''
-    Estados do jogo
+    Estados do jogo.
     '''
 
     MAIN_MENU = 1

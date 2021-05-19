@@ -30,7 +30,7 @@ class FileSystem():
                 data_json = file.read()
 
             self.data = json.loads(data_json)
-        else:
+        else:  # Cria a pasta caso ela não exista
 
             directory = os.path.dirname(path)
 
@@ -45,12 +45,12 @@ class FileSystem():
 
         with open(self.path, 'w') as file:
 
-            data_json = json.dumps(self.data, indent=4)  # indent é usada para formatar o json
+            data_json = json.dumps(self.data, indent=4)  # indent é usado para formatar o json
             file.write(data_json)
 
     def set_data(self, data: dict):
         '''
-        Insere dados
+        Define um dicionário que é usado para os dados.
         '''
 
         self.data = data
@@ -58,7 +58,7 @@ class FileSystem():
 
     def get_data(self):
         '''
-        Retorna os dados
+        Retorna os dados.
         '''
 
         return self.data

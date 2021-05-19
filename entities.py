@@ -1455,7 +1455,7 @@ class Enemy(Aircraft):
     Inimigos.
     '''
 
-    score_value: int # Valor em pontos
+    score_value: int  # Valor em pontos
 
     def __init__(self,
                  position,
@@ -1498,23 +1498,27 @@ class Enemy(Aircraft):
         Definição do comportamento do inimigo.
         '''
 
-        self.stun_behaviour(tick) # Processa o contador do atordoamento
-        self.firerate_behaviour(tick) # Processa o contador da cadência
+        self.stun_behaviour(tick)  # Processa o contador do atordoamento
+        self.firerate_behaviour(tick)  # Processa o contador da cadência
 
-        self.velocity[1] = self.speed # Mantém sempre a mesma velocidade
+        self.velocity[1] = self.speed  # Mantém sempre a mesma velocidade vertical
 
-        chase_player = True
+        chase_player = True  # Definição se o inimigo deve ou não perseguir o jogador
 
+        # Distâncias mínimas
         minimum_x_distance = self.size[0] - 100
         minimum_y_distance = self.size[1] - 100
 
+        # Impede a colisão entre inimigos
         for enemy in enemies:
 
-            if enemy != self:
+            if enemy != self:  # Caso o inimigo não seja ele mesmo
 
+                # Calcula a distância
                 distance = sqrt((enemy.get_position()[0] - self.position[0])**2 +
                                 (enemy.get_position()[1] - self.position[1])**2)
 
+                # Se afasta dos outros inimigos
                 if distance < minimum_x_distance:
 
                     if enemy.get_position()[0] < self.position[0]:  # O outro inimgo está a esquerda
@@ -1530,10 +1534,12 @@ class Enemy(Aircraft):
 
                     chase_player = False
 
-        if chase_player:
+        if chase_player:  # Caso seja possível perseguir o jogador
 
+            # Caso o jogador esteja a mais de 100 pixels de distância lateral
             if abs(player_position[0] - self.position[0]) > 100:
 
+                # Caso esteja muito perto do jogador inverte a direção
                 if (player_position[1] - self.position[1]) > minimum_y_distance:
 
                     direction = -1
@@ -1541,6 +1547,7 @@ class Enemy(Aircraft):
 
                     direction = 1
 
+                # Determina a direção para chegar perto do jogador
                 if player_position[0] < self.position[0]:
 
                     self.velocity[0] = self.speed * direction
@@ -1548,6 +1555,7 @@ class Enemy(Aircraft):
 
                     self.velocity[0] = self.speed * -direction
 
+        # Ataca o jogador caso estejam próximos nas coordenadas verticais
         if (player_position[0] - self.position[0]) < - 100:
 
             self.attacking = False
@@ -1558,6 +1566,7 @@ class Enemy(Aircraft):
 
             self.attacking = True
 
+        # Desativa o inimigo caso ele saia da tela na lateral ou em baixo
         if self.position[0] <= 0 - self.size[0] or              \
            self.position[0] >= screen_size[0] + self.size[0] or \
            self.position[1] >= screen_size[1] + self.size[1]:
@@ -1578,8 +1587,8 @@ class Bullet(Entity):
     Bala.
     '''
 
-    friendly: bool
-    damage: int
+    friendly: bool  # Define se a bala vem do jogador ou não
+    damage: int  # Dano da bala
 
     def __init__(self, position, size, sprite_path, hitbox, friendly, damage):
 
@@ -1590,7 +1599,7 @@ class Bullet(Entity):
 
     def behaviour(self, screen_size):
         '''
-        Comportamento da bala.
+        Comportamento da bala. Desativa caso saia da tela.
         '''
 
         if self.position[0] <= 0 or              \
@@ -1602,7 +1611,7 @@ class Bullet(Entity):
 
     def shoot(self, position, velocity, friendly, damage):
         '''
-        Atira a bala.
+        Atira a bala. Define a sua posição e velocidade.
         '''
 
         self.active = True
@@ -1636,14 +1645,14 @@ class Cloud(Entity):
 
         super().__init__(position, 0.0, size, False, sprite_path, angle, None)
 
-        self.velocity[1] = constant_speed
+        self.velocity[1] = constant_speed  # Define uma velocidade constante
 
     def behaviour(self, screen_size):
         '''
-        Comportamento da núvem.
+        Comportamento da núvem. Redefine a posição assim que a nuvem sai da tela
         '''
 
-        if self.position[1] > screen_size[1] * 1.5:
+        if self.position[1] > screen_size[1] + self.size[1] / 2:
 
             self.set_position((randint(0, screen_size[0]),
                                randint(-screen_size[1], -screen_size[1] // 2)))
@@ -1661,13 +1670,14 @@ class Explosion(Entity):
 
         self.sprite.start_animation()
 
+        # Define o som caso tenha um
         if sound is not None:
 
             pygame.mixer.Sound(sound).play(maxtime=2000)
 
     def behaviour(self):
         '''
-        Comportamento da explosão
+        Comportamento da explosão. Anima ela e a desativa quando a animação acaba.
         '''
 
         self.sprite.animate_frame()
