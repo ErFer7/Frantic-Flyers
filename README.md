@@ -2,6 +2,8 @@
 
 Trabalho de conclusão do disciplina de programação orientada a objetos II da UFSC.
 
+Requisitos: pygame
+
 ## v0.1 - 07/05/2021
 
 * Projeto criado.
