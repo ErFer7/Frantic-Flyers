@@ -6,7 +6,7 @@ Módulo para o sistema gráfico.
 
 import pygame
 
-from states import State
+from source.states import State
 
 
 class GraphicsManager():
@@ -47,15 +47,14 @@ class CustomSprite(pygame.sprite.Sprite):
     Define um sprite.
     '''
 
-    def __init__(self, position, size, image_path=None, color=None, angle=0.0):
+    def __init__(self, position, size, image=None, color=None, angle=0.0):
 
         super().__init__()
 
         # Carrega uma imagem se tiver ou desenha um retângulo
-        if image_path is not None:
+        if image is not None:
 
-            self.image = pygame.transform.scale(pygame.image.load(image_path).convert_alpha(),
-                                                size)
+            self.image = pygame.transform.scale(image, size)
             self.image = pygame.transform.rotate(self.image, angle)
         else:
 
@@ -93,7 +92,7 @@ class CustomAnimatedSprite(pygame.sprite.Sprite):
     animating: bool  # Define se está animando ou não
     step: int  # Frame da animação
 
-    def __init__(self, position, size, path_list):
+    def __init__(self, position, size, image_list):
 
         super().__init__()
 
@@ -101,11 +100,8 @@ class CustomAnimatedSprite(pygame.sprite.Sprite):
         self.animating = False
         self.step = 0
 
-        # Para cada caminho carrega uma imagem
-        for path in path_list:
-
-            self.images.append(pygame.transform.scale(pygame.image.load(path).convert_alpha(),
-                                                      size))
+        for image in image_list:
+            self.images.append(pygame.transform.scale(image, size))
 
         # Define os atributos do sprite
         self.image = self.images[0]
