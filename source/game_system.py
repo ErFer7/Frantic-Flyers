@@ -56,7 +56,7 @@ class GameManager():
 
         self.music_channel = pygame.mixer.Channel(0)
         self.music = pygame.mixer.Sound(self.asset_container.get_audio("music", "Music 1.wav"))
-        # self.music_channel.play(self.music, loops=-1)
+        self.music_channel.play(self.music, loops=-1)
 
         self.state = State.MAIN_MENU
         self.events = []
