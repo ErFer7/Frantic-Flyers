@@ -7,7 +7,6 @@ Módulo para as entidades.
 from random import choice, randint
 from enum import Enum
 from math import sqrt
-from os.path import join
 
 import pygame
 from source.file_system import AssetContainer

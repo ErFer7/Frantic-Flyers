@@ -5,12 +5,12 @@ Módulo para o sistema de arquivos.
 '''
 
 import json
-from re import sub
-
-import pygame
 
 from os import listdir, makedirs
 from os.path import isfile, join, exists, dirname
+
+import pygame
+
 
 class FileSystem():
 
