@@ -133,3 +133,7 @@ Requisitos: pygame
 ## 1.0.1 - 19/05/2021
 
 * Arquivos de som .ogg convertidos para .wav
+
+## 1.1 - 30/07/2022
+
+* Agora os arquivos são carregados por serialização
