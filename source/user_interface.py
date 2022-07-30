@@ -4,14 +4,14 @@
 Módulo para o sistema de interfaces.
 '''
 
-import os
-
 from enum import Enum
+from os.path import join
 
 import pygame
 
-from graphics import CustomSprite
-from states import Event, State
+from source.graphics import CustomSprite
+from source.states import Event, State
+from source.file_system import AssetContainer
 
 
 class UserInterfaceManager():
@@ -21,6 +21,7 @@ class UserInterfaceManager():
     '''
 
     user_interface_event: Event  # Evento
+    asset_container: AssetContainer
     main_menu: None  # Menu principal
     modification_menu: None  # Menu de modificação
     gameplay_interface: None  # Interface do gameplay
@@ -28,15 +29,16 @@ class UserInterfaceManager():
     gameover_interface: None  # Fim de jogo
     sound: pygame.mixer.Sound  # Som
 
-    def __init__(self, screen_size, version):
+    def __init__(self, screen_size, version, asset_container):
 
         self.user_interface_event = None
-        self.main_menu = MainMenu(screen_size, version, (92, 184, 230))
-        self.modification_menu = ModificationMenu(screen_size, (92, 184, 230))
+        self.asset_container = asset_container
+        self.main_menu = MainMenu(screen_size, version, (92, 184, 230), self.asset_container)
+        self.modification_menu = ModificationMenu(screen_size, (92, 184, 230), self.asset_container)
         self.gameplay_interface = GameplayInterface(screen_size, (0, 0, 0, 0))
-        self.pause_interface = PauseInterface(screen_size, (92, 184, 230))
-        self.gameover_interface = GameoverInterface(screen_size, (92, 184, 230))
-        self.sound = pygame.mixer.Sound(os.path.join("Audio", "SFX", "Selection.wav"))
+        self.pause_interface = PauseInterface(screen_size, (92, 184, 230), self.asset_container)
+        self.gameover_interface = GameoverInterface(screen_size, (92, 184, 230), self.asset_container)
+        self.sound = self.asset_container.get_audio("SFX", "Selection.wav")
 
     def update(self, state, display, events, modification_data, score, life):
         '''
@@ -300,7 +302,7 @@ class Text():
 
         self.size = size
         self.color = pygame.color.Color(color)
-        self.font = pygame.font.Font(os.path.join("Fonts", "joystix monospace.ttf"), self.size)
+        self.font = pygame.font.Font(join("assets", "fonts", "joystix monospace.ttf"), self.size)
         self.text = self.font.render(text, False, self.color)
         self.has_shadow = shadow
         self.shadow_color = None
@@ -363,14 +365,14 @@ class Background():
 
     sprites: pygame.sprite.RenderPlain  # Sprites
 
-    def __init__(self, size):
+    def __init__(self, size, image):
 
         self.sprites = pygame.sprite.RenderPlain()
 
         # No caso só foi usado um sprite
         self.sprites.add(CustomSprite((size[0] / 2 - 512, size[1] / 2 - 512),
                                       (1024, 1024),
-                                      os.path.join("Sprites", "Background", "UI_Background.png")))
+                                      image))
 
 
 class Bar():
@@ -486,13 +488,13 @@ class MainMenu(UserInterface):
     Define o menu.
     '''
 
-    def __init__(self, screen_size, version, background_color):
+    def __init__(self, screen_size, version, background_color, asset_container):
 
         super().__init__((0, 0), screen_size, screen_size, background_color)
 
         # Inicializa o plano de fundo, botões e textos
 
-        self.background = Background(screen_size)
+        self.background = Background(screen_size, asset_container.get_sprite("background", "UI_Background.png"))
 
         self.buttons["Modify"] = Button(Alignment.CENTER,
                                         (0, 0),
@@ -552,13 +554,13 @@ class ModificationMenu(UserInterface):
     Define o menu de modificação.
     '''
 
-    def __init__(self, screen_size, background_color):
+    def __init__(self, screen_size, background_color, asset_container):
 
         super().__init__((0, 0), screen_size, screen_size, background_color)
 
         # Inicializa o plano de fundo, botões, textos e barras
 
-        self.background = Background(screen_size)
+        self.background = Background(screen_size, asset_container.get_sprite("background", "UI_Background.png"))
 
         self.buttons["Return"] = Button(Alignment.TOP_LEFT,
                                         (25, 25),
@@ -1024,13 +1026,13 @@ class PauseInterface(UserInterface):
     Interface da tela de pausa.
     '''
 
-    def __init__(self, screen_size, background_color):
+    def __init__(self, screen_size, background_color, asset_container):
 
         super().__init__((0, 0), screen_size, screen_size, background_color)
 
         # Inicializa o plano de fundo, botões e textos
 
-        self.background = Background(screen_size)
+        self.background = Background(screen_size, asset_container.get_sprite("background", "UI_Background.png"))
 
         self.texts["Title"] = Text("PAUSADO",
                                    Alignment.TOP,
@@ -1099,13 +1101,13 @@ class GameoverInterface(UserInterface):
     Interface de fim de jogo.
     '''
 
-    def __init__(self, screen_size, background_color):
+    def __init__(self, screen_size, background_color, asset_container):
 
         super().__init__((0, 0), screen_size, screen_size, background_color)
 
         # Inicializa o plano de fundo, botões e textos
 
-        self.background = Background(screen_size)
+        self.background = Background(screen_size, asset_container.get_sprite("background", "UI_Background.png"))
 
         self.texts["Title"] = Text("FIM DE JOGO",
                                    Alignment.TOP,

@@ -4,17 +4,17 @@
 Módulo para as entidades.
 '''
 
-import os
-
 from random import choice, randint
 from enum import Enum
 from math import sqrt
+from os.path import join
 
 import pygame
+from source.file_system import AssetContainer
 
-from graphics import CustomSprite, CustomAnimatedSprite
-from physics import Hitbox
-from states import Event, State
+from source.graphics import CustomSprite, CustomAnimatedSprite
+from source.physics import Hitbox
+from source.states import Event, State
 
 
 class EntityManager():
@@ -25,6 +25,7 @@ class EntityManager():
 
     score: int  # Pontuação
     screen_size: tuple  # Tamanho da tela
+    asset_container: AssetContainer
     player: None  # Jogador
     enemies: list  # Inimigos
     bullets: list  # Balas
@@ -39,10 +40,11 @@ class EntityManager():
     elapsed_time: float  # Tempo passado
     event: Event  # Eventos
 
-    def __init__(self, screen_size, inactive_bullets_limit, enemies_limit, small_animation_limit):
+    def __init__(self, screen_size, inactive_bullets_limit, enemies_limit, small_animation_limit, asset_container):
 
         self.score = 0
         self.screen_size = screen_size
+        self.asset_container = asset_container
 
         # Hitbox do jogador
         player_hitbox = Hitbox((self.screen_size[0] / 2, self.screen_size[1] / 2),
@@ -58,10 +60,10 @@ class EntityManager():
                              1.0,
                              1.0,
                              0.25,
-                             os.path.join("Audio", "SFX", "Gun 4.wav"),
-                             os.path.join("Audio", "SFX", "Damage.wav"),
+                             self.asset_container.get_audio("SFX", "Gun 4.wav"),
+                             self.asset_container.get_audio("SFX", "Damage.wav"),
                              (300, 300),
-                             os.path.join("Sprites", "Planes", "UK_Spitfire.png"),
+                             self.asset_container.get_sprite("planes", "UK_Spitfire.png"),
                              0,
                              player_hitbox)
 
@@ -79,8 +81,9 @@ class EntityManager():
                                           0.25,
                                           (300, 300),
                                           180,
-                                          os.path.join("Audio", "SFX", "Damage.wav"))
-        self.animation_factory = AnimationFactory((300, 300))
+                                          self.asset_container.get_audio("SFX", "Damage.wav"),
+                                          self.asset_container)
+        self.animation_factory = AnimationFactory((300, 300), self.asset_container)
         self.elapsed_time = 0.0
         self.event = None
 
@@ -135,11 +138,8 @@ class EntityManager():
             position = (randint(0, self.screen_size[0]),
                         randint(-self.screen_size[1], self.screen_size[1]))
 
-            # Caminho para uma das nuvens. Definido aleatóriamente
-            path = os.path.join("Sprites", "Scenery", f"Cloud {randint(0, 4)}.png")
-
             # Carrega a imagem da nuvem
-            image = pygame.image.load(path)
+            image = self.asset_container.get_sprite("scenery", f"Cloud {randint(0, 4)}.png")
 
             # Define o tamanho da imagem
             size = (image.get_width() * 3, image.get_height() * 3)
@@ -150,7 +150,7 @@ class EntityManager():
             # Adiciona a nuvem na lista
             self.clouds.append(Cloud(position,
                                      size,
-                                     path,
+                                     image,
                                      0,
                                      speed))
 
@@ -166,7 +166,7 @@ class EntityManager():
         # Define o tamanho inicial, tamanho, caminho e velocidade
         instatiation_position = (0, 0)
         size = (3, 9)
-        path = os.path.join("Sprites", "Bullets", "Bullet.png")
+        path = self.asset_container.get_sprite("bullets", "Bullet.png")
         velocity = 500.0
 
         # Caso a bala seja do jogador muda sua velocidade para ir para o norte
@@ -600,8 +600,9 @@ class EnemyFactory():
     size: tuple  # Tamanho padrão
     angle: int  # Ângulo padrão
     damage_sound: str  # Som de dano padrão
+    asset_container: AssetContainer
 
-    def __init__(self, scree_size, max_difficulty, drag, stun_time, size, angle, damage_sound):
+    def __init__(self, scree_size, max_difficulty, drag, stun_time, size, angle, damage_sound, asset_container):
 
         self.screen_size = scree_size
         self.max_difficulty = max_difficulty
@@ -610,6 +611,7 @@ class EnemyFactory():
         self.size = size
         self.angle = angle
         self.damage_sound = damage_sound
+        self.asset_container = asset_container
 
     def generate_enemy(self, difficulty):
         '''
@@ -660,10 +662,10 @@ class EnemyFactory():
                               1.0,
                               1.0,
                               self.stun_time,
-                              os.path.join("Audio", "SFX", "Gun 3.wav"),
+                              self.asset_container.get_audio("SFX", "Gun 3.wav"),
                               self.damage_sound,
                               self.size,
-                              os.path.join("Sprites", "Planes", "GER_bf109.png"),
+                              self.asset_container.get_sprite("planes", "GER_bf109.png"),
                               self.angle,
                               hitbox,
                               100)
@@ -682,10 +684,10 @@ class EnemyFactory():
                               1.25,
                               1.0,
                               self.stun_time,
-                              os.path.join("Audio", "SFX", "Gun 3.wav"),
+                              self.asset_container.get_audio("SFX", "Gun 3.wav"),
                               self.damage_sound,
                               self.size,
-                              os.path.join("Sprites", "Planes", "JAP_a6m.png"),
+                              self.asset_container.get_sprite("planes", "JAP_a6m.png"),
                               self.angle,
                               hitbox,
                               100)
@@ -704,10 +706,10 @@ class EnemyFactory():
                               1.5,
                               1.0,
                               self.stun_time,
-                              os.path.join("Audio", "SFX", "Gun 3.wav"),
+                              self.asset_container.get_audio("SFX", "Gun 3.wav"),
                               self.damage_sound,
                               self.size,
-                              os.path.join("Sprites", "Planes", "US_p40.png"),
+                              self.asset_container.get_sprite("planes", "US_p40.png"),
                               self.angle,
                               hitbox,
                               100)
@@ -726,10 +728,10 @@ class EnemyFactory():
                               0.1,
                               0.1,
                               self.stun_time,
-                              os.path.join("Audio", "SFX", "Gun 3.wav"),
+                              self.asset_container.get_audio("SFX", "Gun 3.wav"),
                               self.damage_sound,
                               self.size,
-                              os.path.join("Sprites", "Planes", "USSR_Lagg3.png"),
+                              self.asset_container.get_sprite("planes", "USSR_Lagg3.png"),
                               self.angle,
                               hitbox,
                               1000)
@@ -755,10 +757,10 @@ class EnemyFactory():
                               2.0,
                               5.0,
                               self.stun_time,
-                              os.path.join("Audio", "SFX", "Gun 1.wav"),
+                              self.asset_container.get_audio("SFX", "Gun 1.wav"),
                               self.damage_sound,
                               self.size,
-                              os.path.join("Sprites", "Planes", "GER_bf110.png"),
+                              self.asset_container.get_sprite("planes", "GER_bf110.png"),
                               self.angle,
                               hitbox,
                               250)
@@ -777,10 +779,10 @@ class EnemyFactory():
                               0.9,
                               5.0,
                               self.stun_time,
-                              os.path.join("Audio", "SFX", "Gun 2.wav"),
+                              self.asset_container.get_audio("SFX", "Gun 2.wav"),
                               self.damage_sound,
                               self.size,
-                              os.path.join("Sprites", "Planes", "GER_He111.png"),
+                              self.asset_container.get_sprite("planes", "GER_He111.png"),
                               self.angle,
                               hitbox,
                               250)
@@ -806,10 +808,10 @@ class EnemyFactory():
                               0.75,
                               1.5,
                               self.stun_time,
-                              os.path.join("Audio", "SFX", "Gun 2.wav"),
+                              self.asset_container.get_audio("SFX", "Gun 2.wav"),
                               self.damage_sound,
                               self.size,
-                              os.path.join("Sprites", "Planes", "JAP_Ki21.png"),
+                              self.asset_container.get_sprite("planes", "JAP_Ki21.png"),
                               self.angle,
                               hitbox,
                               500)
@@ -828,10 +830,10 @@ class EnemyFactory():
                               1.1,
                               1.2,
                               self.stun_time,
-                              os.path.join("Audio", "SFX", "Gun 1.wav"),
+                              self.asset_container.get_audio("SFX", "Gun 1.wav"),
                               self.damage_sound,
                               self.size,
-                              os.path.join("Sprites", "Planes", "US_a26.png"),
+                              self.asset_container.get_sprite("planes", "US_a26.png"),
                               self.angle,
                               hitbox,
                               500)
@@ -857,10 +859,10 @@ class EnemyFactory():
                               0.75,
                               1.3,
                               self.stun_time,
-                              os.path.join("Audio", "SFX", "Gun 5.wav"),
+                              self.asset_container.get_audio("SFX", "Gun 5.wav"),
                               self.damage_sound,
                               self.size,
-                              os.path.join("Sprites", "Planes", "US_b17.png"),
+                              self.asset_container.get_sprite("planes", "US_b17.png"),
                               self.angle,
                               hitbox,
                               750)
@@ -879,10 +881,10 @@ class EnemyFactory():
                               1.0,
                               1.5,
                               self.stun_time,
-                              os.path.join("Audio", "SFX", "Gun 5.wav"),
+                              self.asset_container.get_audio("SFX", "Gun 5.wav"),
                               self.damage_sound,
                               self.size,
-                              os.path.join("Sprites", "Planes", "UK_Lancaster.png"),
+                              self.asset_container.get_sprite("planes", "UK_Lancaster.png"),
                               self.angle,
                               hitbox,
                               750)
@@ -896,32 +898,28 @@ class AnimationFactory():
     Auxilia na criação de uma animação.
     '''
 
-    path_lists: list  # Lista de caminhos para os arquivos
+    image_lists: list  # Lista de caminhos para os arquivos
     size: tuple  # Tamanho padrão
+    asset_container: AssetContainer
 
-    def __init__(self, size):
+    def __init__(self, size, asset_container):
 
         # Obtém o caminho para todos arquivos
 
         self.size = size
-        self.path_lists = []
+        self.image_lists = []
+        self.asset_container = asset_container
 
         for i in range(5):
 
-            path_list = []
+            image_list = []
 
-            file_number = len(os.listdir(os.path.join("Sprites",
-                                                      "Animations",
-                                                      f"Explosion {i + 1}")))
+            file_number = len(self.asset_container.get_sprite("animations", f"explosion {i + 1}"))
 
             for j in range(file_number):
+                image_list.append(self.asset_container.get_sprite("animations", f"explosion {i + 1}", f"{j}.png"))
 
-                path_list.append(os.path.join("Sprites",
-                                              "Animations",
-                                              f"Explosion {i + 1}",
-                                              f"{j}.png"))
-
-            self.path_lists.append(path_list)
+            self.image_lists.append(image_list)
 
     def generate_explosion(self, position, small):
         '''
@@ -939,9 +937,9 @@ class AnimationFactory():
             index = randint(3, 4)  # Indice das explosões grandes
 
             # Caminho do som da explosão
-            path = os.path.join("Audio", "SFX", "Explosion.wav")
+            path = self.asset_container.get_audio("SFX", "Explosion.wav")
 
-        return Explosion(position, self.size, self.path_lists[index], path)
+        return Explosion(position, self.size, self.image_lists[index], path)
 
 
 class BulletType(Enum):
@@ -1139,8 +1137,8 @@ class Aircraft(Entity):
         self.attacking = False
         self.destroyed = False
         self.damaged = False
-        self.attack_sound = pygame.mixer.Sound(attack_sound)
-        self.damage_sound = pygame.mixer.Sound(damage_sound)
+        self.attack_sound = attack_sound
+        self.damage_sound = damage_sound
 
     def change_life(self, value, stun=False, armor_modifier=0.0):
         '''

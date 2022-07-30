@@ -6,7 +6,7 @@ Módulo para a física.
 
 import pygame
 
-from states import State
+from source.states import State
 
 
 class PhysicsManager():

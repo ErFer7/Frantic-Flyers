@@ -5,19 +5,19 @@ Módulo para o gerenciador de jogo.
 '''
 
 import sys
-import os
 
 from random import seed
 from time import time_ns
+from os.path import join
 
 import pygame
 
-from states import Event, State
-from file_system import FileSystem
-from entities import EntityManager
-from physics import PhysicsManager
-from graphics import GraphicsManager
-from user_interface import UserInterfaceManager
+from source.states import Event, State
+from source.file_system import FileSystem, AssetContainer
+from source.entities import EntityManager
+from source.physics import PhysicsManager
+from source.graphics import GraphicsManager
+from source.user_interface import UserInterfaceManager
 
 
 class GameManager():
@@ -31,6 +31,7 @@ class GameManager():
     music_channel: pygame.mixer.Channel  # Canal de música
     state: State  # Estado do jogo
     events: list  # Lista de eventos
+    asset_container: AssetContainer
     file_system: FileSystem  # Sistema de arquivos
     data: dict  # Dados
     entities: EntityManager  # Sistema de entidades
@@ -50,14 +51,17 @@ class GameManager():
         self.clock = pygame.time.Clock()
         self.display = pygame.display.set_mode(flags=pygame.FULLSCREEN)
 
+        # Serialization
+        self.asset_container = AssetContainer()
+
         self.music_channel = pygame.mixer.Channel(0)
-        self.music = pygame.mixer.Sound(os.path.join("Audio", "Music", "Music 1.wav"))
-        self.music_channel.play(self.music, loops=-1)
+        self.music = pygame.mixer.Sound(self.asset_container.get_audio("music", "Music 1.wav"))
+        # self.music_channel.play(self.music, loops=-1)
 
         self.state = State.MAIN_MENU
         self.events = []
 
-        self.file_system = FileSystem(os.path.join("Data", "Player Data.json"))
+        self.file_system = FileSystem(join("Data", "Player Data.json"))
 
         # Inicializa o jogo com os dados padrões e depois verifica se é necessário
         # Carregar os dados da memória permanente.
@@ -79,10 +83,10 @@ class GameManager():
         # Obtém o tamanho da tela
         screen_size = (self.display.get_width(), self.display.get_height())
 
-        self.entities = EntityManager(screen_size, 100, 10, 5)
+        self.entities = EntityManager(screen_size, 100, 10, 5, self.asset_container)
         self.physics = PhysicsManager()
         self.graphics = GraphicsManager((92, 184, 230))
-        self.user_interface = UserInterfaceManager(screen_size, version)
+        self.user_interface = UserInterfaceManager(screen_size, version, self.asset_container)
 
     def run_game(self, tick):
         '''
